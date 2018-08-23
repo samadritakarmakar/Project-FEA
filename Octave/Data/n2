@@ -1,0 +1,7 @@
+# Created by Octave 4.2.1, Sat Nov 25 18:31:48 2017 CET <sam@sam-laptop>
+# name: data
+# type: matrix
+# rows: 2
+# columns: 3
+1	1.0000000000000000	-0.5773502691896257
+2	1.0000000000000000	0.5773502691896257
