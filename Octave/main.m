@@ -23,11 +23,12 @@ FileName=input('Enter file name of Mesh file: ','s');
 Property.type=ElementData.Type;
 Property.degree=ElementData.Degree;
 [NumOfElements , ~]=size(ElementData.ElementNodes);
-
+%loads the Gauss File of the correct Poperty
 file = LoadGaussFile(Property);
 
 load (file)
-[GaussLength ~]=size(data);
+[GaussLength DependentEpsilon]=size(data);
+DependentEpsilon=DependentEpsilon-2; %Factoring for the numbering and the weights in the Gauss Files
 isAvectorCh=input('Is the quantity in question a vector? (y/n) ','s');
 if (strcmp(isAvectorCh,'y')||strcmp(isAvectorCh,'Y'))
     isAvector=1;
@@ -40,7 +41,40 @@ else
 end
 
 %Get Node Positions in the Matrices and the Vectors
-NodePositons=GetNodePostions(ElementData.ElementNodes,vectorLevel);
+NodePositons=GetNodePostions(ElementData.ElementNodes,vectorLevel); %Positions in the matrix and vectors which are to be filled.
+if (strcmp(Property.type,'1D'))
+GaussLength1=GaussLength;
+GaussLength2=1;
+GaussLength3=1;
+NoOfInterpolatedCoords=1;
+NoOfIndependentEpsilon=1;
+elseif(strcmp(Property.type, 'Triangle'))
+GaussLength1=GaussLength;
+GaussLength2=1;
+GaussLength3=1;
+NoOfInterpolatedCoords=2;
+NoOfIndependentEpsilon=1;
+elseif(strcmp(Property.type, 'Quadrilateral'))
+GaussLength1=GaussLength;
+GaussLength2=GaussLength;
+GaussLength3=1;
+NoOfInterpolatedCoords=2;
+NoOfIndependentEpsilon=2;
+elseif(strcmp(Property.type, 'Tetrahedral'))
+GaussLength1=GaussLength;
+GaussLength2=1;
+GaussLength3=1;
+NoOfInterpolatedCoords=3;
+NOIfIndependentEpsilon=1;
+elseif(strcmp(Property.type, 'Hexahedral'))
+GaussLength1=GaussLength;
+GaussLength2=GaussLength;
+GaussLength3=GaussLength;
+NoOfInterpolatedCoords=3;
+NoOfIndependentEpsilon=3;
+end
+
+    
 
 for ElementNum=1:NumOfElements
     NodalCoord=NodalCoordinates (ElementData.ElementNodes(ElementNum,:),:);
@@ -52,91 +86,115 @@ for ElementNum=1:NumOfElements
     OtherData.xCoords=xCoords;
     OtherData.yCoords=yCoords;
     OtherData.zCoords=zCoords;
-
+    OtherData.NoOfInterpolatedCoords=NoOfInterpolatedCoords;
+%When considering only 1D elements
     if (strcmp(Property.type,'1D'))
-        for GaussPoint=1:GaussLength
-            epsilon=data(GaussPoint,3:end);
-            w=data(GaussPoint,2);
+        for GaussPoint1=1:GaussLength1
+        for GaussPoint2=1:GaussLength2
+        for GaussPoint3=1:GaussLength3
+            epsilonTemp=[data(GaussPoint1,3:end),data(GaussPoint2,3:end),data(GaussPoint3,3:end)];
+            epsilon=epsilonTemp(1:NoOfIndependentEpsilon*DependentEpsilon);
+            wTemp=[data(GaussPoint1,2),data(GaussPoint2,2),data(GaussPoint3,2)];
+            w=[wTemp(1:NoOfIndependentEpsilon),ones(1,3-NoOfIndependentEpsilon)];
+           
+            %Doubtful about Higher Order Elements.
+            %Done for Transformation of Vectors.
+            [cosMatrix xVector]= BuildCosMatrix(xCoords, yCoords, zCoords, ElementData, vectorLevel);
+             %A First Course in the Finite Element Method - Daryl L. Logan eqn 3.7.6
+            OtherData.xCoords=cosMatrix*xVector; %Translate vector [x] containing x y and z coordinates 
+            
             phi=ShapeFunction(epsilon, Property);
-            %have doubts when using higher order elements
-            xDiff=xCoords(end)-xCoords(1);
-            yDiff=yCoords(end)-yCoords(1);
-            zDiff=zCoords(end)-zCoords(1);
-            if (vectorLevel==1)
-                ElementLength=(xDiff);
-                cos_xyz=1;
-            elseif (vectorLevel==2)
-                ElementLength=sqrt(xDiff^2+yDiff^2);
-                cos_xyz=[xDiff,yDiff]*(1/ElementLength);
-            elseif (vectorLevel==3)
-                ElementLength=sqrt(xDiff^2+yDiff^2+zDiff^2);
-                cos_xyz=[xDiff,yDiff,zDiff]*(1/ElementLength);
-            end
-            cosMatrix=zeros(ElementData.NumOfElementNodes,vectorLevel*ElementData.NumOfElementNodes);
-            xVector=zeros(vectorLevel*ElementData.NumOfElementNodes,1);
-            for Row=1:ElementData.NumOfElementNodes;
-                if (vectorLevel==1)
-                   Coords= [xCoords(Row)];
-                elseif (vectorLevel==2)
-                   Coords= [xCoords(Row);yCoords(Row)];
-                elseif (vectorLevel==3)
-                    Coords= [xCoords(Row);yCoords(Row);zCoords(Row)];
-                end
-                cosMatrix(Row,(vectorLevel*Row-(vectorLevel-1)):(vectorLevel*Row))=cos_xyz;  %A First Course in the Finite Element Method - Daryl L. Logan eqn 3.7.8
-                xVector((vectorLevel*Row-(vectorLevel-1)):(vectorLevel*Row),1)= Coords;
-            end
-            OtherData.xCoords=cosMatrix*xVector;
-            x=interpolateX(epsilon, OtherData);
-            u=phi;
-            v=phi';
+            x=interpolateX(epsilon, OtherData, NoOfInterpolatedCoords);
+            u=phi;%[phi1,phi2,phi3,.....]
+            v=phi';%[phi1;phi2;phi3;.....]
             F=jacobian(@interpolateX, epsilon, OtherData); %Jonathan Whiteley Finite Element Methods A Practical Guide eqn 7.39
-            duBYdx=jacobian(@ShapeFunction,epsilon,Property)*inv(F); %Jonathan Whiteley Finite Element Methods A Practical Guide eqn 7.39
-            duBYdx=duBYdx';
-            dvBydx=duBYdx;
-            [LHSmatrixLocalGauss RHSmatrixLocalGauss RHSvectorLocalGauss]=UserFunction(x,u,v,duBYdx,dvBydx, ElementNum);
+            gradu=jacobian(@ShapeFunction,epsilon,Property)*inv(F); %Jonathan Whiteley Finite Element Methods A Practical Guide eqn 7.39
+            gradv=gradu;%[phi1/dx phi1/dy  phi1/dz; phi2/dx  phi2/dy  phi2/z; phi3/dx phi3/dy phi3/dz;  ...]
+            gradu=gradu';%[phi1/dx phi2/dx phi3/dx; phi1/dy phi2/dy phi3/dy; phi1/z phi2/z phi3/dz;  ...]
+            
+            [LHSmatrixLocalGauss RHSmatrixLocalGauss RHSvectorLocalGauss]=UserFunction(x,u,v,gradu,gradv, ElementNum);
             if(isAvector)
                 LHSmatrixLocalGauss=cosMatrix'*LHSmatrixLocalGauss*cosMatrix; %A First Course in the Finite Element Method - Daryl L. Logan eqn 3.7.8
                 RHSvectorLocalGauss=cosMatrix'*RHSvectorLocalGauss; %T'*f Change local matrix to global matrix; A First Course in the Finite Element Method  3.4.16
             end
-            if (GaussPoint==1)
+            LocalGaussMatrices.LHSmatrixLocalGauss=LHSmatrixLocalGauss;
+            LocalGaussMatrices.RHSmatrixLocalGauss=RHSmatrixLocalGauss;
+            LocalGaussMatrices.RHSvectorLocalGauss=RHSvectorLocalGauss;
+
+            if (GaussPoint1==1)
                 LHSmatrixLocal=zeros(size(LHSmatrixLocalGauss));
                 RHSmatrixLocal=zeros(size(RHSmatrixLocalGauss));
                 RHSvectorLocal=zeros(size(RHSvectorLocalGauss));
             end
-             %Jonathan Whiteley Finite Element Methods A Practical Guide eqn 7.36
-            LHSmatrixLocal=w*LHSmatrixLocalGauss*det(F) + LHSmatrixLocal;
-            RHSmatrixLocal=w*RHSmatrixLocalGauss*det(F) + RHSmatrixLocal;
-            RHSvectorLocal=w*RHSvectorLocalGauss*det(F) + RHSvectorLocal;
+            
+            LocalMatrices.LHSmatrixLocal=LHSmatrixLocal;
+            LocalMatrices.RHSmatrixLocal=RHSmatrixLocal;
+            LocalMatrices.RHSvectorLocal=RHSvectorLocal;
+
+            [LHSmatrixLocal RHSmatrixLocal RHSvectorLocal] = BuildLocalMatrices(LocalGaussMatrices, LocalMatrices, F, w);
         end
-        if (ElementNum==1)
-            LHSmatrix=zeros(dof);
-            RHSvector=zeros(dof,1);
-            if (length(RHSmatrixLocalGauss)==0)
-                RHSmatrix=[];
-                1
-            else
-                RHSmatrix=zeros(dof);
-            end
         end
+        end
+
+%When considering only Triangle elements
     elseif(strcmp(Property.type, 'Triangle'))
-        for GaussPoint=1:GaussLength
-            epsilon=data(GaussPoint,3:end);
+        for GaussPoint1=1:GaussLength1
+            epsilon=data(GaussPoint1,3:end);
+            w=data(GaussPoint1,2);
             phi = ShapeFunction(epsilon, Property);
-            x=interpolateX(epsilon, OtherData);
-            y=interpolateY(epsilon, OtherData);
+            x=interpolateXY(epsilon, OtherData); %Contains interpolated values of x, y and z;
             u=phi;
             v=phi';
+            F=jacobian(@interpolateXY, epsilon, OtherData);
+            gradu=jacobian(@ShapeFunction,epsilon,Property)*inv(F); %Jonathan Whiteley Finite Element Methods A Practical Guide eqn 7.39
+            gradu=gradu';
+            gradv=gradu;
+            [LHSmatrixLocalGauss RHSmatrixLocalGauss RHSvectorLocalGauss]=UserFunction(x,u,v,gradu,gradv, ElementNum);
+            
+            LocalGaussMatrices.LHSmatrixLocalGauss=LHSmatrixLocalGauss;
+            LocalGaussMatrices.RHSmatrixLocalGauss=RHSmatrixLocalGauss;
+            LocalGaussMatrices.RHSvectorLocalGauss=RHSvectorLocalGauss;
+
+            if (GaussPoint1==1)
+                LHSmatrixLocal=zeros(size(LHSmatrixLocalGauss));
+                RHSmatrixLocal=zeros(size(RHSmatrixLocalGauss));
+                RHSvectorLocal=zeros(size(RHSvectorLocalGauss));
+            end
+            
+            LocalMatrices.LHSmatrixLocal=LHSmatrixLocal;
+            LocalMatrices.RHSmatrixLocal=RHSmatrixLocal;
+            LocalMatrices.RHSvectorLocal=RHSvectorLocal;
+
+            [LHSmatrixLocal RHSmatrixLocal RHSvectorLocal] = BuildLocalMatrices(LocalGaussMatrices, LocalMatrices, F, w);
         end
+        
+    %When considering only Quadrilateral elements
     elseif(strcmp(Property.type, 'Quadrilateral'))
-        for GaussPoint1=1:GaussLength
-            for GaussPoint2=1:GaussLength
-                epsilon=[data(GaussPoint1,3:end),data(GaussPoint2,3:end)];
+        for GaussPoint1=1:GaussLength1
+            for GaussPoint2=1:GaussLength2
+                epsilon(1)=data(GaussPoint1,3:end);
+                epsilon(2)=data(GaussPoint2,3:end);
+                w1=data(GaussPoint1,2);
+                w2=data(GaussPoint2,2);
+                epsilon=[data(GaussPoint1,3:end),data2(GaussPoint2,3:end)];
                 phi = ShapeFunction(epsilon, Property);
                 x=interpolateX(epsilon, OtherData);
                 y=interpolateY(epsilon, OtherData);
                 u=phi;
                 v=phi';
+                
             end
+        end
+    end
+    if (ElementNum==1)
+        LHSmatrix=spalloc(dof,dof,NumOfElements*ElementData.NumOfElementNodes*vectorLevel);
+        %LHSmatrix=zeros(dof);
+        RHSvector=zeros(dof,1);
+        if (length(RHSmatrixLocalGauss)==0)
+            RHSmatrix=[];
+        else
+            %RHSmatrix=zeros(dof);
+            spalloc(dof,dof,NumOfElements*ElementData.NumOfElementNodes*vectorLevel);
         end
     end
     LHSmatrix(NodePositons(ElementNum,:),NodePositons(ElementNum,:))=LHSmatrix(NodePositons(ElementNum,:),NodePositons(ElementNum,:))+ LHSmatrixLocal;
