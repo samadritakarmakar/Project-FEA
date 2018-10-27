@@ -88,7 +88,7 @@ for ElementNum=1:NumOfElements
     OtherData.zCoords=zCoords;
     OtherData.NoOfInterpolatedCoords=NoOfInterpolatedCoords;
 %When considering only 1D elements
-    if (strcmp(Property.type,'1D'))
+  %  if (strcmp(Property.type,'1D'))
         for GaussPoint1=1:GaussLength1
         for GaussPoint2=1:GaussLength2
         for GaussPoint3=1:GaussLength3
@@ -108,7 +108,8 @@ for ElementNum=1:NumOfElements
             u=phi;%[phi1,phi2,phi3,.....]
             v=phi';%[phi1;phi2;phi3;.....]
             F=jacobian(@interpolateX, epsilon, OtherData); %Jonathan Whiteley Finite Element Methods A Practical Guide eqn 7.39
-            gradu=jacobian(@ShapeFunction,epsilon,Property)*inv(F); %Jonathan Whiteley Finite Element Methods A Practical Guide eqn 7.39
+            graduTemp=jacobian(@ShapeFunction,epsilon,Property)*inv(F); %Jonathan Whiteley Finite Element Methods A Practical Guide eqn 7.39
+            gradu=VectorizeGradu(graduTemp, NoOfInterpolatedCoords);
             gradv=gradu;%[phi1/dx phi1/dy  phi1/dz; phi2/dx  phi2/dy  phi2/z; phi3/dx phi3/dy phi3/dz;  ...]
             gradu=gradu';%[phi1/dx phi2/dx phi3/dx; phi1/dy phi2/dy phi3/dy; phi1/z phi2/z phi3/dz;  ...]
             
@@ -137,6 +138,7 @@ for ElementNum=1:NumOfElements
         end
 
 %When considering only Triangle elements
+%{
     elseif(strcmp(Property.type, 'Triangle'))
         for GaussPoint1=1:GaussLength1
             epsilon=data(GaussPoint1,3:end);
@@ -186,6 +188,7 @@ for ElementNum=1:NumOfElements
             end
         end
     end
+    %}
     if (ElementNum==1)
         LHSmatrix=spalloc(dof,dof,NumOfElements*ElementData.NumOfElementNodes*vectorLevel);
         %LHSmatrix=zeros(dof);
