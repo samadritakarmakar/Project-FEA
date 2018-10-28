@@ -10,7 +10,7 @@ function ContainsNodes=SortAndKeep(ElementNodes)
             first=1;
             last=length(ContainsNodes);
             while(flag)
-                middle=(int16)(first+last)/2;
+                middle=int32((first+last)/2);
                 if (ContainsNodes(middle-1)<ElementNodes(row,column) && ContainsNodes(middle)<ElementNodes(row,column))
                 first=middle;
                 if (middle==last)
@@ -23,12 +23,10 @@ function ContainsNodes=SortAndKeep(ElementNodes)
                         ContainsNodes=[ElementNodes(row,column),ContainsNodes];
                         flag=0;
                     end
-                elseif(ContainsNodes(middle-1)<ElementNodes(row,column) &&
-                ContainsNodes(middle)>ElementNodes(row,column))
+                elseif (ContainsNodes(middle-1)<ElementNodes(row,column) && ContainsNodes(middle)>ElementNodes(row,column))
                 ContainsNodes=[ContainsNodes(1:middle-1),ElementNodes(row,column),ContainsNodes(middle:end)];
                 flag=0;
-                elseif(ContainsNodes(middle-1)==ElementNodes(row,column) ||
-                ContainsNodes(middle)==ElementNodes(row,column))
+                elseif(ContainsNodes(middle-1)==ElementNodes(row,column) || ContainsNodes(middle)==ElementNodes(row,column))
                 flag=0;
                 end
             end

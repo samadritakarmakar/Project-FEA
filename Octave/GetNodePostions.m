@@ -4,7 +4,7 @@ function NodePositons=GetNodePostions(ElementNodes,vectorLevel)
     NodePositons=zeros(row,vectorLevel*column);
     for i=1:column
         for j=0:vectorLevel-1
-            NodePositons(:,vectorLevel*i-j)=vectorLevel*ElementNodes(:,i)-j*ones(size(row),1);
+            NodePositons(:,vectorLevel*i-j)=vectorLevel*ElementNodes(:,i)-j*ones(size(row,2),1);
         end
     end
 end

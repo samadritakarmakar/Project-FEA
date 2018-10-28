@@ -8,6 +8,7 @@ function [xyz]=interpolateX(epsilon, OtherData)
     x=phi*xCoords;
     y=phi*yCoords;
     z=phi*zCoords;
+    xyz=zeros(1,NoOfInterpolatedCoords);
     xyz_temporary=[x;y;z];
     xyz=xyz_temporary(1:NoOfInterpolatedCoords);
 end

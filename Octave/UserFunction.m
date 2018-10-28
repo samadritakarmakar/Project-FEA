@@ -2,4 +2,4 @@ function [LHSmatrix RHSmatrix RHSvector]=UserFunction(x,u,v,gradu,gradv, Element
 
 LHSmatrix = ScalarDot(gradv,gradu);
 RHSmatrix=[];
-RHSvector=v.*f(x);
+RHSvector=ScalarDot(v,f(x));
