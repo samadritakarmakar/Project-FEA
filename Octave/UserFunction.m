@@ -1,5 +1,6 @@
 function [LHSmatrix RHSmatrix RHSvector]=UserFunction(xInterpolated,VectorizedX,u,v,gradu,gradv, ElementNum);
 
-LHSmatrix = InnerProduct(gradv,gradu);
+LHSmatrix = ScalarDot(gradv,gradu);
 RHSmatrix=[];
-RHSvector=Dot(v,f(VectorizedX));
+RHSvector=ScalarDot(v,u*f(VectorizedX)); %u added to enable integration at Gauss Point (Recommended)
+%RHSvector=[];
