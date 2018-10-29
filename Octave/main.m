@@ -106,15 +106,18 @@ for ElementNum=1:NumOfElements
                     OtherData.xCoords=cosMatrix*xVector; %Translate vector [x] containing x y and z coordinates 
                 end
                 phiTemp=ShapeFunction(epsilon, Property);%[phi1,phi2,phi3,.....]
-                x=interpolateX(epsilon, OtherData);
-                u=VectorizePhi(phiTemp, NoOfInterpolatedCoords);%
+                xInterpolated=interpolateX(epsilon, OtherData);
+                VectorizedX=VectorizeX(OtherData, vectorLevel);
+                %u=VectorizePhi(phiTemp, NoOfInterpolatedCoords);
+                u=VectorizePhi(phiTemp, vectorLevel);
                 v=u';
                 F=jacobian(@interpolateX, epsilon, OtherData); %Jonathan Whiteley Finite Element Methods A Practical Guide eqn 7.39
                 graduTemp=jacobian(@ShapeFunction,epsilon,Property)*inv(F); %Jonathan Whiteley Finite Element Methods A Practical Guide eqn 7.39
-                gradu=VectorizeGradu(graduTemp, NoOfInterpolatedCoords);
+                %gradu=VectorizeGradu(graduTemp, NoOfInterpolatedCoords);
+                gradu=VectorizeGradu(graduTemp, vectorLevel);
                 gradv=gradu;%[phi1/dx phi1/dy  phi1/dz; phi2/dx  phi2/dy  phi2/z; phi3/dx phi3/dy phi3/dz;  ...]
                 gradu=gradu';%[phi1/dx phi2/dx phi3/dx; phi1/dy phi2/dy phi3/dy; phi1/z phi2/z phi3/dz;  ...]
-                [LHSmatrixLocalGauss RHSmatrixLocalGauss RHSvectorLocalGauss]=UserFunction(x,u,v,gradu,gradv, ElementNum);
+                [LHSmatrixLocalGauss RHSmatrixLocalGauss RHSvectorLocalGauss]=UserFunction(xInterpolated,VectorizedX,u,v,gradu,gradv, ElementNum);
                 switch (isAvector && strcmp(Property.Type,'1D'))
                     case 1
                         LHSmatrixLocalGauss=cosMatrix'*LHSmatrixLocalGauss*cosMatrix; %A First Course in the Finite Element Method - Daryl L. Logan eqn 3.7.8
@@ -142,13 +145,19 @@ for ElementNum=1:NumOfElements
     case 1
         LHSmatrix=spalloc(dof,dof,NumOfElements*ElementData.NumOfElementNodes*vectorLevel);
         %LHSmatrix=zeros(dof);
-        RHSvector=zeros(dof,1);
+        %RHSvector=zeros(dof,1);
         switch length(RHSmatrixLocalGauss)
         case 0
             RHSmatrix=[];
         otherwise
             %RHSmatrix=zeros(dof);
-            spalloc(dof,dof,NumOfElements*ElementData.NumOfElementNodes*vectorLevel);
+            RHSmatrix=spalloc(dof,dof,NumOfElements*ElementData.NumOfElementNodes*vectorLevel);
+        end
+        switch length(RHSvectorLocalGauss)
+        case 0
+            RHSvector=[];
+        otherwise
+            RHSvector=zeros(dof,1);
         end
     end
     LHSmatrix(NodePositons(ElementNum,:),NodePositons(ElementNum,:))=LHSmatrix(NodePositons(ElementNum,:),NodePositons(ElementNum,:))+ LHSmatrixLocal;

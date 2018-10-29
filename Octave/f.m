@@ -5,5 +5,5 @@ x=xn(:,1);
 y=xn(:,2);
 z=xn(:,3);
 %}
-fx=xn.^2;
+fx=sin(xn);
 end
