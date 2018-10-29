@@ -1,7 +1,7 @@
 function phi = ShapeFunction(epsilon, Property)
 %Natural Coordinates
 
-type=Property.type;
+type=Property.Type;
 degree=Property.degree;
 switch type
 case '1D'

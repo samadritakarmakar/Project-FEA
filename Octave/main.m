@@ -20,13 +20,13 @@ fprintf('    along with this program.  If not, see <https://www.gnu.org/licenses
 addpath('libMeshReader/')
 FileName=input('Enter file name of Mesh file: ','s');
 [ElementData NodalCoordinates] = MeshReader(FileName);
-Property.type=ElementData.Type;
+Property.Type=ElementData.Type;
 Property.degree=ElementData.Degree;
 NumOfElements=size(ElementData.ElementNodes,1);
 %loads the Gauss File of the correct Poperty
-file = LoadGaussFile(Property);
 
-load (file, '-mat')
+file = LoadGaussFile(Property)
+load (file, '-mat');
 [GaussLength DependentEpsilon]=size(data);
 DependentEpsilon=DependentEpsilon-2; %Factoring for the numbering and the weights in the Gauss Files
 isAvectorCh=input('Is the quantity in question a vector? (y/n) ','s');
@@ -39,34 +39,33 @@ else
     vectorLevel=1;
     dof=1*length(ElementData.ContainsNodes);
 end
-
 %Get Node Positions in the Matrices and the Vectors
 NodePositons=GetNodePostions(ElementData.ElementNodes,vectorLevel); %Positions in the matrix and vectors which are to be filled.
-if (strcmp(Property.type,'1D'))
+if (strcmp(Property.Type,'1D'))
 GaussLength1=GaussLength;
 GaussLength2=1;
 GaussLength3=1;
 NoOfInterpolatedCoords=1;
 NoOfIndependentEpsilon=1;
-elseif(strcmp(Property.type, 'Triangle'))
+elseif(strcmp(Property.Type, 'Triangle'))
 GaussLength1=GaussLength;
 GaussLength2=1;
 GaussLength3=1;
 NoOfInterpolatedCoords=2;
 NoOfIndependentEpsilon=1;
-elseif(strcmp(Property.type, 'Quadrilateral'))
+elseif(strcmp(Property.Type, 'Quadrilateral'))
 GaussLength1=GaussLength;
 GaussLength2=GaussLength;
 GaussLength3=1;
 NoOfInterpolatedCoords=2;
 NoOfIndependentEpsilon=2;
-elseif(strcmp(Property.type, 'Tetrahedral'))
+elseif(strcmp(Property.Type, 'Tetrahedral'))
 GaussLength1=GaussLength;
 GaussLength2=1;
 GaussLength3=1;
 NoOfInterpolatedCoords=3;
-NOIfIndependentEpsilon=1;
-elseif(strcmp(Property.type, 'Hexahedral'))
+NoOfIndependentEpsilon=1;
+elseif(strcmp(Property.Type, 'Hexahedral'))
 GaussLength1=GaussLength;
 GaussLength2=GaussLength;
 GaussLength3=GaussLength;
@@ -90,7 +89,7 @@ for ElementNum=1:NumOfElements
     OtherData.zCoords=zCoords;
     OtherData.NoOfInterpolatedCoords=NoOfInterpolatedCoords;
 %When considering only 1D elements
-  %  if (strcmp(Property.type,'1D'))
+  %  if (strcmp(Property.Type,'1D'))
     for GaussPoint1=1:GaussLength1
         for GaussPoint2=1:GaussLength2
             for GaussPoint3=1:GaussLength3
@@ -98,7 +97,7 @@ for ElementNum=1:NumOfElements
                 epsilon=epsilonTemp(1:NoOfIndependentEpsilon*DependentEpsilon);
                 wTemp=[data(GaussPoint1,2),data(GaussPoint2,2),data(GaussPoint3,2)];
                 w=[wTemp(1:NoOfIndependentEpsilon),ones(1,3-NoOfIndependentEpsilon)];
-                switch Property.type
+                switch Property.Type
                 case '1D'
                     %Doubtful about Higher Order Elements.
                     %Done for Transformation of Vectors.
@@ -116,7 +115,7 @@ for ElementNum=1:NumOfElements
                 gradv=gradu;%[phi1/dx phi1/dy  phi1/dz; phi2/dx  phi2/dy  phi2/z; phi3/dx phi3/dy phi3/dz;  ...]
                 gradu=gradu';%[phi1/dx phi2/dx phi3/dx; phi1/dy phi2/dy phi3/dy; phi1/z phi2/z phi3/dz;  ...]
                 [LHSmatrixLocalGauss RHSmatrixLocalGauss RHSvectorLocalGauss]=UserFunction(x,u,v,gradu,gradv, ElementNum);
-                switch (isAvector && strcmp(Property.type,'1D'))
+                switch (isAvector && strcmp(Property.Type,'1D'))
                     case 1
                         LHSmatrixLocalGauss=cosMatrix'*LHSmatrixLocalGauss*cosMatrix; %A First Course in the Finite Element Method - Daryl L. Logan eqn 3.7.8
                         RHSvectorLocalGauss=cosMatrix'*RHSvectorLocalGauss; %T'*f Change local matrix to global matrix; A First Course in the Finite Element Method  3.4.16
