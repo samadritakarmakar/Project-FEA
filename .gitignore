@@ -2,3 +2,5 @@
 Octave/.directory
 Octave/octave-workspace
 matlab2cpp
+Cpp/build
+Cpp/CMakeLists.txt.user

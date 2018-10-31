@@ -13,26 +13,18 @@ set(CMAKE_BUILD_TYPE Release)
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed.
-set(CMAKE_AUTOMOC ON)
+#set(CMAKE_AUTOMOC ON)
 
-set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTOUIC ON)
 
 #set(QT_USE_QTWEBKIT TRUE)
 # Find the QtWidgets library
 #find_package(Qt5Widgets REQUIRED)
+
+#Find Armadillo 
 find_package(Armadillo REQUIRED)
+
 # Tell CMake to create the helloworld executable
-include_directories ("${PROJECT_SOURCE_DIR}/libMeshReader")
-add_subdirectory(libMeshReader)
-add_executable(Prj-FEA2 mainTest.cpp)
-
-target_link_libraries (Prj-FEA2 libMeshReader)
-
-# Use the Widgets module from Qt 5.
-#target_link_libraries(GATE_calc Qt5::Widgets Qt5WebKitWidgets)
-
-#file(COPY ${YOUR_SRC_IMAGE_DIR}/Calc/* DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Calc/)
-#add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/Calc
-#     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Calc ${CMAKE_BINARY_DIR}/Calc)
-# add_custom_target(Calc ALL
-#     DEPENDS ${CMAKE_BINARY_DIR}/Calc)
+#add_executable(K_assmbly k_spring.cpp k_truss.cpp k_assmbly_file.cpp)
+#add_executable(libMeshReader SortAndKeep.cpp libMeshReader.h)
+add_library(libMeshReader SortAndKeep.cpp GetElemProperty.cpp libMeshReader.h)
