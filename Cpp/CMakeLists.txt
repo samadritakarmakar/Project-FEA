@@ -17,16 +17,28 @@ set(CMAKE_AUTOMOC ON)
 
 set(CMAKE_AUTOUIC ON)
 
+#set Gmsh cmake Module path
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
 #set(QT_USE_QTWEBKIT TRUE)
 # Find the QtWidgets library
 #find_package(Qt5Widgets REQUIRED)
+
 find_package(Armadillo REQUIRED)
-# Tell CMake to create the helloworld executable
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+#find_package(SLU REQUIRED)
+find_package(Gmsh)
+find_package(SuperLU)
+
 include_directories ("${PROJECT_SOURCE_DIR}/libMeshReader")
 add_subdirectory(libMeshReader)
+
+
 add_executable(Prj-FEA2 mainTest.cpp)
 
-target_link_libraries (Prj-FEA2 libMeshReader)
+target_link_libraries (Prj-FEA2 libMeshReader armadillo lapack openblas gmsh superlu)
+
 
 # Use the Widgets module from Qt 5.
 #target_link_libraries(GATE_calc Qt5::Widgets Qt5WebKitWidgets)

@@ -24,7 +24,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #Find Armadillo 
 find_package(Armadillo REQUIRED)
 
+find_package(Armadillo REQUIRED)
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+
 # Tell CMake to create the helloworld executable
 #add_executable(K_assmbly k_spring.cpp k_truss.cpp k_assmbly_file.cpp)
 #add_executable(libMeshReader SortAndKeep.cpp libMeshReader.h)
+
 add_library(libMeshReader SortAndKeep.cpp GetElemProperty.cpp libMeshReader.h)

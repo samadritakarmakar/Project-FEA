@@ -25,7 +25,7 @@ Property.degree=ElementData.Degree;
 NumOfElements=size(ElementData.ElementNodes,1);
 %loads the Gauss File of the correct Poperty
 
-file = LoadGaussFile(Property)
+file = LoadGaussFile(Property);
 load (file, '-mat');
 [GaussLength DependentEpsilon]=size(data);
 DependentEpsilon=DependentEpsilon-2; %Factoring for the numbering and the weights in the Gauss Files
@@ -113,10 +113,10 @@ for ElementNum=1:NumOfElements
                 v=u';
                 F=jacobian(@interpolateX, epsilon, OtherData); %Jonathan Whiteley Finite Element Methods A Practical Guide eqn 7.39
                 graduTemp=jacobian(@ShapeFunction,epsilon,Property)*inv(F); %Jonathan Whiteley Finite Element Methods A Practical Guide eqn 7.39
-                %gradu=VectorizeGradu(graduTemp, NoOfInterpolatedCoords);
-                gradu=VectorizeGradu(graduTemp, vectorLevel);
-                gradv=gradu;%[phi1/dx phi1/dy  phi1/dz; phi2/dx  phi2/dy  phi2/z; phi3/dx phi3/dy phi3/dz;  ...]
-                gradu=gradu';%[phi1/dx phi2/dx phi3/dx; phi1/dy phi2/dy phi3/dy; phi1/z phi2/z phi3/dz;  ...]
+                %gradu=VectorizeGradu(graduTemp, NoOfInterpolatedCoords);%[phi1/dx phi1/dy  phi1/dz; phi2/dx  phi2/dy  phi2/z; phi3/dx phi3/dy phi3/dz;  ...]
+                gradu=VectorizeGradu(graduTemp, vectorLevel);% Finite Element Methods for Fluid Problems- Jean Donea and Antonio Huerta eqn 6.24
+                gradv=gradu;
+                gradu=gradu';
                 [LHSmatrixLocalGauss RHSmatrixLocalGauss RHSvectorLocalGauss]=UserFunction(xInterpolated,VectorizedX,u,v,gradu,gradv, ElementNum);
                 switch (isAvector && strcmp(Property.Type,'1D'))
                     case 1
