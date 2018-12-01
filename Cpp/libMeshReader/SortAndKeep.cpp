@@ -7,7 +7,7 @@
 #include <armadillo>
 using namespace arma ;
 
-mat MeshReader::SortAndKeep(mat ElementNodes)
+mat libMeshReader::MeshReader::SortAndKeep(mat ElementNodes)
 {
   mat ContainsNodes ;
   int rows = ElementNodes.n_rows;

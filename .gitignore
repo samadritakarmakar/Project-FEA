@@ -4,3 +4,4 @@ Octave/octave-workspace
 matlab2cpp
 Cpp/build
 Cpp/CMakeLists.txt.user
+Cpp/libGmshReader/GmshApi/libgmsh.a

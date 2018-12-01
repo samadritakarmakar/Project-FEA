@@ -4,6 +4,9 @@
 #include <string>
 using namespace arma;
 using namespace std;
+namespace libMeshReader {
+
+
 class ElementType
 {
 public:
@@ -21,3 +24,4 @@ class MeshReader : public ElementType
 };
 //mat SortAndKeep(mat ElementNodes);
 #endif // LIBMESHREADER_H
+}

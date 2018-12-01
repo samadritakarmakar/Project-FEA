@@ -6,7 +6,7 @@
 #  Gmsh_FOUND: if false, do not try to use Gmsh
 #  Gmsh_VERSION: The found version of Gmsh
 
-find_path(Gmsh_INCLUDE_DIR NAMES Gmsh.h
+find_path(Gmsh_INCLUDE_DIR NAMES gmsh
   PATHS
   /usr/include/
   /usr/local/include/

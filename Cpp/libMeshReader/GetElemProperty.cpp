@@ -8,7 +8,7 @@
 #include "libMeshReader.h"
 using namespace arma ;
 using namespace std;
-void GetElemProperty(int GmshElementNum, string& Type, string& Degree, int& NumOfElementNodes, int& NumofDimensions, int& Supported)
+void libMeshReader::MeshReader::GetElemProperty(int GmshElementNum, string& Type, string& Degree, int& NumOfElementNodes, int& NumofDimensions, int& Supported)
 {
   switch (GmshElementNum)
   {
