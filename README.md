@@ -14,7 +14,7 @@ To compile the code, you need to download the latest Gmsh source code from gmsh.
 Copy the libgmsh.a file generated to the folder Project-FEA2/Cpp/libGmshReader/GmshApi/  
 Run the following command in your Project-FEA2 Build directory.
 
-    cmake <path gmsh source directory>
+    cmake <path Project-FEA2/Cpp/ source directory>
     make
     
 A new file Prj-FEA2 will be created
