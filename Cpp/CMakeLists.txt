@@ -5,9 +5,9 @@ project(Project-FEA2)
 set(CMAKE_BUILD_TYPE Release)
 ## Compiler flags
 #Comment out if building on UNIX
-#    set(CMAKE_CXX_FLAGS "-O2 -mwindows")        ## Optimize
+#    set(CMAKE_CXX_FLAGS "-O3 -mwindows")        ## Optimize
 #Uncomment if building on UNIX
-    set(CMAKE_CXX_FLAGS "-O2")
+    set(CMAKE_CXX_FLAGS "-O3")
 
    # set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
 # Find includes in corresponding build directories
@@ -30,6 +30,7 @@ find_package(LAPACK REQUIRED)
 #find_package(SLU REQUIRED)
 #find_package(Gmsh REQUIRED)
 find_package(SuperLU)
+find_package(OpenMP)
 
 #include_directories ("${PROJECT_SOURCE_DIR}/libMeshReader")
 #add_subdirectory(libMeshReader)
@@ -44,7 +45,8 @@ add_executable(Prj-FEA2 mainTest.cpp)
 
 #target_link_libraries (Prj-FEA2 libMeshReader armadillo lapack openblas gmsh superlu)
 target_link_libraries (Prj-FEA2 libGmshReader armadillo lapack openblas superlu ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a GmshApi)
-
+target_link_libraries(Prj-FEA2 PRIVATE "${OpenMP_CXX_FLAGS}")
+target_compile_options(Prj-FEA2 PRIVATE "${OpenMP_CXX_FLAGS}")
 # Use the Widgets module from Qt 5.
 #target_link_libraries(GATE_calc Qt5::Widgets Qt5WebKitWidgets)
 

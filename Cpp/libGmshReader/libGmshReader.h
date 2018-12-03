@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <chrono>
 using namespace arma;
 namespace libGmshReader
 {
@@ -19,7 +20,7 @@ class ElementData
     std::string fileName;
     bool fileExist;
     int dim;
-    int GetElementData();
+    void GetElementData();
 };
 class NodeData
 {
@@ -30,7 +31,7 @@ public:
     std::string fileName;
     bool fileExist;
     int dim;
-    int GetNodeData();
+    void GetNodeData();
 
 };
 class MeshReader: public ElementData, public NodeData
@@ -54,13 +55,18 @@ public:
         setFileName(FileName);
         ///sets dimension
         setDimension(dimension);
+        std::chrono::time_point<std::chrono::system_clock> start, end;
+        start = std::chrono::system_clock::now();
         ///Extracts Node data from Mesh file
         GetNodeData();
         ///Extracts Element data from Mesh file
         GetElementData();
         ///Sets the variable ElementNodes Mesh file
         setElementNodes();
+        end=std::chrono::system_clock::now();
         std::cout<<"Done Reading the Mesh!\n";
+        std::chrono::duration<double> elapsed_seconds = end-start;
+        std::cout<<"Time taken to Read Mesh= "<<elapsed_seconds.count()<<" seconds\n";
     }
   /*  ///Sets only dimension. Need to use setFileName in this case
     MeshReader(int dimension)

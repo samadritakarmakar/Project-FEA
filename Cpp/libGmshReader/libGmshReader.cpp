@@ -8,7 +8,7 @@
 #include <vector>
 #include <fstream>
 
-int libGmshReader::NodeData::GetNodeData()
+void libGmshReader::NodeData::GetNodeData()
 {
     gmsh::initialize();
     //std::ifstream fileExist(fileName);
@@ -37,13 +37,13 @@ int libGmshReader::NodeData::GetNodeData()
             n=(++n)*!kMod3Bool; //Sets n to 0 if all 3 dimensions have been retrived
             k++;
         }
-        return 1;
+        //return 1;
     }
-    else
-        return 0;
+    //else
+      //  return 0;
 }
 
-int libGmshReader::ElementData::GetElementData()
+void libGmshReader::ElementData::GetElementData()
 {
     if (fileExist)
     {
@@ -72,12 +72,12 @@ int libGmshReader::ElementData::GetElementData()
                     n=!TestStatement*n;
             }
         }
-        return 1;
+        //return 1;
     }
-    else
+    /*else
     {
         return 0;
-    }
+    }*/
 }
 void libGmshReader::MeshReader::setElementNodes()
 {
@@ -87,18 +87,21 @@ void libGmshReader::MeshReader::setElementNodes()
         ElementNodes.set_size(GmshNodeTag.n_rows,GmshNodeTag.n_cols);
         //Arranges the unique Node tags in an assending manner
         uvec ContainsNodeTags=unique(GmshNodeTag);
+        uvec NodeTagPos(1);
         for (int i=0; i<(ContainsNodeTags.n_rows); i++)
         {
             //The goal is to find the same Node Tags in NodeTag and in GmshNodeTags.
             uvec GmshElemNodeTagPos=find(GmshNodeTag==ContainsNodeTags(i));
-            uvec NodeTagPos=find(NodeTag==ContainsNodeTags(i));
-            for(int j=0;j<GmshElemNodeTagPos.n_rows;j++)
+            NodeTagPos=find(NodeTag==ContainsNodeTags(i));
+            umat temp=NodeTagPos(0)*ones<umat>(GmshElemNodeTagPos.size());
+            ElementNodes.elem(GmshElemNodeTagPos)=temp;
+            /*for(int j=0;j<GmshElemNodeTagPos.n_rows;j++)
             {
                 //Here the ElementNodes are set according to index position of
                 //the Node tag in the variable NodeTag. The hope is faster access
                 //during solving the FEM.
                 ElementNodes(GmshElemNodeTagPos(j))=NodeTagPos(0);
-            }
+            }*/
         }
     }
 
