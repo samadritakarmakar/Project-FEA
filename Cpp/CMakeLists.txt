@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8.11)
 
 project(Project-FEA2)
 
-set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 ## Compiler flags
 #Comment out if building on UNIX
 #    set(CMAKE_CXX_FLAGS "-O3 -mwindows")        ## Optimize
@@ -38,7 +39,8 @@ include_directories ("${PROJECT_SOURCE_DIR}/libGmshReader/GmshApi/")
 add_subdirectory(libGmshReader/GmshApi/)
 include_directories ("${PROJECT_SOURCE_DIR}/libGmshReader/")
 add_subdirectory(libGmshReader/)
-
+#include_directories ("${PROJECT_SOURCE_DIR}/tools/")
+#add_subdirectory(tools/)
 
 
 add_executable(Prj-FEA2 mainTest.cpp)

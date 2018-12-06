@@ -29,9 +29,9 @@ int main()
     if(Test.success)
     {
         std::cout<<"Number of Nodes= "<<Test.NumOfNodes<<"\n";
-       // std::cout<<"Node Tags= \n"<<Test.NodeTag;
-       // cout<<"Element Nodes = \n"<<Test.ElementNodes;
-       // cout<<"Gmsh Element Nodes = \n"<<Test.GmshNodeTag;
+        // std::cout<<"Node Tags= \n"<<Test.NodeTag;
+        //cout<<"Element Nodes = \n"<<Test.ElementNodes;
+        //cout<<"Gmsh Element Nodes = \n"<<Test.GmshNodeTag;
     }
 
     return 0;

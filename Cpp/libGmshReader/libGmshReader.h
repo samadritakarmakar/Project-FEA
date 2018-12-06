@@ -14,13 +14,41 @@ namespace libGmshReader
 class ElementData
 {
     public:
-    std::string Type, Degree, GmshElementName;
-    int NumOfElementNodes, order, NumOfDimension;
-    umat ElementNodes, ElementTag, ContainsNodes, GmshNodeTag;
+    std::string *Type, *Degree, *GmshElementName;
+    int *NumOfElementNodes, *order, *NumOfDimension, *GmshElementType, NumOfElementTypes;
+    umat *ElementNodes, *ElementTag, *ContainsNodes, *GmshNodeTag;
     std::string fileName;
     bool fileExist;
     int dim;
     void GetElementData();
+    void AllocateElementData()
+    {
+        Type=new std::string [NumOfElementTypes];
+        Degree=new std::string [NumOfElementTypes];
+        GmshElementName=new std::string [NumOfElementTypes];
+        NumOfElementNodes =new int [NumOfElementTypes];
+        order=new int [NumOfElementTypes];
+        NumOfDimension=new int [NumOfElementTypes];
+        GmshElementType=new int [NumOfElementTypes];
+        ElementNodes=new umat [NumOfElementTypes];
+        ElementTag=new umat [NumOfElementTypes];
+        ContainsNodes=new umat [NumOfElementTypes];
+        GmshNodeTag=new umat[NumOfElementTypes];
+    }
+    void DeleteElementData()
+    {
+        delete []Type;
+        delete []Degree;
+        delete []GmshElementName;
+        delete []NumOfElementNodes;
+        delete []order;
+        delete []NumOfDimension;
+        delete []ElementNodes;
+        delete []ElementTag;
+        delete []ContainsNodes;
+        delete []GmshNodeTag;
+    }
+
 };
 class NodeData
 {
@@ -67,6 +95,11 @@ public:
         std::cout<<"Done Reading the Mesh!\n";
         std::chrono::duration<double> elapsed_seconds = end-start;
         std::cout<<"Time taken to Read Mesh= "<<elapsed_seconds.count()<<" seconds\n";
+    }
+    ///Deallocates all allocated Element Data
+    ~MeshReader()
+    {
+        DeleteElementData();
     }
   /*  ///Sets only dimension. Need to use setFileName in this case
     MeshReader(int dimension)

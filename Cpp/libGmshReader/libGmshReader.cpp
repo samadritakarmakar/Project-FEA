@@ -51,25 +51,49 @@ void libGmshReader::ElementData::GetElementData()
         std::vector<std::vector<int> > elementTags, nodeTags;
         const int tag = -1;
         gmsh::model::mesh::getElements(elementTypes, elementTags, nodeTags, dim, tag);
-        int elementType=elementTypes[0],dim2,TestStatement;
+        int elementType[elementTypes.size()],dim2,TestStatement;
+        NumOfElementTypes=elementTypes.size();
+        AllocateElementData();
         std::vector<double> parametricCoord;
-        gmsh::model::mesh::getElementProperties(elementType, GmshElementName, dim2, order, NumOfElementNodes, parametricCoord);
-        ElementTag.set_size(1,elementTags.size()*elementTags[0].size());
-        GmshNodeTag.set_size(elementTags.size()*elementTags[0].size(),NumOfElementNodes);
-        int m=0,n=0;
+        //int ElementTagSize=0;
+        for (int i=0;i<elementTags.size();i++)
+        {
+            //ElementTagSize=elementTags[i].size();
+            GmshElementType[i]=elementTypes[i];
+            gmsh::model::mesh::getElementProperties(GmshElementType[i], GmshElementName[i], dim2, order[i], NumOfElementNodes[i], parametricCoord);
+            ElementTag[i].set_size(1,elementTags[i].size());
+            GmshNodeTag[i].set_size(elementTags[i].size(),NumOfElementNodes[i]);
+            cout<<"Number of Element Nodes Each of Element Type"<<i+1<<" = "<<NumOfElementNodes[i]<<"\n";
+            cout<<"Element Type"<<i+1<<"= "<<GmshElementType[i]<<"\n";
+            cout<<"Number of Element of Tag"<<i+1<<"= "<<elementTags[i].size()<<"\n\n";
+            //cout<<"ElementTags size total "<<ElementTagSize<<"\n";
+        }
+        cout<<"Num Of Element Types "<<NumOfElementTypes<<"\n\n";
+
+
+        //ElementTag.set_size(1,elementTags.size()*elementTags[0].size());
+        //GmshNodeTag.set_size(elementTags.size()*elementTags[0].size(),NumOfElementNodes);
+
+        int m=0,n=0,c1=0;
         for (int i=0;i<elementTags.size();i++)
         {
             for(int j=0;j<elementTags[i].size();j++)
             {
-               ElementTag(0,(i+1)*j)= elementTags[i][j];
+               //ElementTag(0,(i+1)*j)= elementTags[i][j];
+                //cout<<"c1= "<<c1;
+                ElementTag[i](0,j)= elementTags[i][j];
+                ++c1;
             }
+            m=0;
+            n=0;
             for(int k=0; k<nodeTags[i].size();k++)
             {
-                GmshNodeTag(m*(i+1),n)=nodeTags[i][k];
+                //cout<<m<<","<<n<<" ";
+                GmshNodeTag[i](m,n)=nodeTags[i][k];
                 n++;
-                TestStatement=((k+1)%NumOfElementNodes==0);
-                    m=m+TestStatement*1;
-                    n=!TestStatement*n;
+                TestStatement=((k+1)%NumOfElementNodes[i]==0);
+                    m=m+TestStatement*1; //If NumOfElementNodes divides k+1, then increase m
+                    n=!TestStatement*n;  //If NumOfElementNodes divides k+1, then increase n=0
             }
         }
         //return 1;
@@ -83,25 +107,31 @@ void libGmshReader::MeshReader::setElementNodes()
 {
     if (success)
     {
-        //Size of ElementNodes is same as GmshNodeTag variable
-        ElementNodes.set_size(GmshNodeTag.n_rows,GmshNodeTag.n_cols);
-        //Arranges the unique Node tags in an assending manner
-        uvec ContainsNodeTags=unique(GmshNodeTag);
-        uvec NodeTagPos(1);
-        for (int i=0; i<(ContainsNodeTags.n_rows); i++)
+        for(int j=0; j<NumOfElementTypes; ++j)
         {
-            //The goal is to find the same Node Tags in NodeTag and in GmshNodeTags.
-            uvec GmshElemNodeTagPos=find(GmshNodeTag==ContainsNodeTags(i));
-            NodeTagPos=find(NodeTag==ContainsNodeTags(i));
-            umat temp=NodeTagPos(0)*ones<umat>(GmshElemNodeTagPos.size());
-            ElementNodes.elem(GmshElemNodeTagPos)=temp;
-            /*for(int j=0;j<GmshElemNodeTagPos.n_rows;j++)
+            //Size of ElementNodes is same as GmshNodeTag variable
+            ElementNodes[j].set_size(GmshNodeTag[j].n_rows,GmshNodeTag[j].n_cols);
+            //std::cout<<"ElementType= "<<GmshElementType[j]<<"Rows= "<<GmshNodeTag[j].n_rows<<"\nColumns= "<<GmshNodeTag[j].n_cols<<"\n";
+            //Arranges the unique Node tags in an assending manner
+            uvec ContainsNodeTags=unique(GmshNodeTag[j]);
+            //uvec NodeTagPos(1);
+            for (int i=0; i<(ContainsNodeTags.n_rows); i++)
             {
-                //Here the ElementNodes are set according to index position of
-                //the Node tag in the variable NodeTag. The hope is faster access
-                //during solving the FEM.
-                ElementNodes(GmshElemNodeTagPos(j))=NodeTagPos(0);
-            }*/
+                //The goal is to find the same Node Tags in NodeTag and in GmshNodeTags.
+                uvec GmshElemNodeTagPos=find(GmshNodeTag[j]==ContainsNodeTags(i));
+                uvec NodeTagPos=find(NodeTag==ContainsNodeTags(i));
+                umat temp=NodeTagPos(0)*ones<umat>(GmshElemNodeTagPos.size());
+                ElementNodes[j].elem(GmshElemNodeTagPos)=temp;
+                /*for(int k=0;k<GmshElemNodeTagPos.n_rows;k++)
+                {
+                    //Here the ElementNodes are set according to index position of
+                    //the Node tag in the variable NodeTag. The hope is faster access
+                    //during solving the FEM.
+                    std::cout<<"k="<<k;
+                    ElementNodes(GmshElemNodeTagPos(k))=NodeTagPos(0);
+                }*/
+        }
+
         }
     }
 
