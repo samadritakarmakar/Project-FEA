@@ -39,9 +39,10 @@ include_directories ("${PROJECT_SOURCE_DIR}/libGmshReader/GmshApi/")
 add_subdirectory(libGmshReader/GmshApi/)
 include_directories ("${PROJECT_SOURCE_DIR}/libGmshReader/")
 add_subdirectory(libGmshReader/)
-#include_directories ("${PROJECT_SOURCE_DIR}/tools/")
-#add_subdirectory(tools/)
-
+#include_directories ("${PROJECT_SOURCE_DIR}/FEMtools/")
+#add_subdirectory(FEMtools/)
+include_directories ("${PROJECT_SOURCE_DIR}/FEM/")
+add_subdirectory(FEM/)
 
 add_executable(Prj-FEA2 mainTest.cpp)
 

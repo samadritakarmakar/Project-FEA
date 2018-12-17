@@ -26,5 +26,5 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Tell CMake to create the helloworld executable
 #add_executable(K_assmbly k_spring.cpp k_truss.cpp k_assmbly_file.cpp)
-add_library(tools jacobian.cpp)
+add_library(FEMtools BuildCosMatrix.cpp ShapeFunction.cpp VectorizeGradu.cpp VectorizeX.cpp BuildLocalMatrices.cpp  GetNodePostions.cpp LoadGaussFile.cpp TestFunctionDot.cpp  VectorizePhi.cpp)
 

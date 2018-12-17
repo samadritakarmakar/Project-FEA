@@ -75,6 +75,11 @@ public:
     {
         setFileName(FileName);
     }*/
+/*  ///Sets only dimension. Need to use setFileName in this case
+    MeshReader(int dimension)
+    {
+        setDimension(dimension);
+    }*/
     ///Sets fileName and Dimension.
     MeshReader(std::string FileName, int dimension)
     {
@@ -101,11 +106,7 @@ public:
     {
         DeleteElementData();
     }
-  /*  ///Sets only dimension. Need to use setFileName in this case
-    MeshReader(int dimension)
-    {
-        setDimension(dimension);
-    }*/
+
 
     ///sets file name in NodeData and ElementData
     void setFileName(std::string FileName)

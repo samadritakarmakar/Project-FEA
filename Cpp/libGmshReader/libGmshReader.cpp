@@ -121,6 +121,9 @@ void libGmshReader::MeshReader::setElementNodes()
                 uvec GmshElemNodeTagPos=find(GmshNodeTag[j]==ContainsNodeTags(i));
                 uvec NodeTagPos=find(NodeTag==ContainsNodeTags(i));
                 umat temp=NodeTagPos(0)*ones<umat>(GmshElemNodeTagPos.size());
+                //Here the ElementNodes are set according to index position of
+                //the Node tag in the variable NodeTag. The hope is faster access
+                //during solving the FEM.
                 ElementNodes[j].elem(GmshElemNodeTagPos)=temp;
                 /*for(int k=0;k<GmshElemNodeTagPos.n_rows;k++)
                 {

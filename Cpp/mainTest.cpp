@@ -1,9 +1,10 @@
 #include<stdio.h>
 #include <string>
-#include <functional>
-//#include "libMeshReader/libMeshReader.h"
-#include "libGmshReader/libGmshReader.h"
 #include <armadillo>
+//#include "libMeshReader/libMeshReader.h"
+//#include "libGmshReader/libGmshReader.h"
+#include "libGmshReader.h"
+#include "FemModule.h"
 
 using namespace arma;
 int main()
