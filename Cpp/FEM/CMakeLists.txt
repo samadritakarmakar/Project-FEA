@@ -7,7 +7,7 @@ set(CMAKE_BUILD_TYPE Release)
 #Comment out if building on UNIX
 #    set(CMAKE_CXX_FLAGS "-O2 -mwindows")        ## Optimize
 #Uncomment if building on UNIX
-    set(CMAKE_CXX_FLAGS "-O2")
+    set(CMAKE_CXX_FLAGS "-O3")
 
     set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
 # Find includes in corresponding build directories

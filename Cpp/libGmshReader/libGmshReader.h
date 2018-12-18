@@ -7,6 +7,7 @@
 #include <vector>
 #include <fstream>
 #include <chrono>
+#include <thread>
 using namespace arma;
 namespace libGmshReader
 {
@@ -109,36 +110,18 @@ public:
 
 
     ///sets file name in NodeData and ElementData
-    void setFileName(std::string FileName)
-    {
-        ///Check if file Exists.
-        std::ifstream fileExists(FileName);
-        if(fileExists)
-        {
-           NodeData::fileName=FileName;
-           NodeData::fileExist=true;
-           ElementData::fileName=NodeData::fileName;
-           ElementData::fileExist=NodeData::fileExist;
-           success=1;
-        }
-        else
-        {
-           std::cout<<"File Does not exist!\n";
-           NodeData::fileExist=false;
-           ElementData::fileExist=NodeData::fileExist;
-           success=0;
-        }
-    }
+    void setFileName(std::string FileName);
+
     ///sets dimension in NodeData and ElementData
-    void setDimension(int dimension)
-    {
-        NodeData::dim=dimension;
-        ElementData::dim=NodeData::dim;
-    }
+    void setDimension(int dimension);
+
     ///sets the Data of ElementNodes.
     void setElementNodes();
 
     int success;
+//private:
+    ///Fills the variable ElementNode from start to end-1.
+    void FillElementNodes(int start, int end, int ElementType, uvec &ContainsNodeTags);
 };
 }
 #endif // LIBGMSHREADER_H

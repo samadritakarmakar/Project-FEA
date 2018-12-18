@@ -1,12 +1,8 @@
 #ifndef LIBGMSHREADER_M_HPP
 #define LIBGMSHREADER_M_HPP
 #include "libGmshReader.h"
-#include <vector>
-#include <armadillo>
-#include <gmsh.h>
-#include <string>
-#include <vector>
-#include <fstream>
+
+
 
 void libGmshReader::NodeData::GetNodeData()
 {
@@ -63,7 +59,7 @@ void libGmshReader::ElementData::GetElementData()
             gmsh::model::mesh::getElementProperties(GmshElementType[i], GmshElementName[i], dim2, order[i], NumOfElementNodes[i], parametricCoord);
             ElementTag[i].set_size(1,elementTags[i].size());
             GmshNodeTag[i].set_size(elementTags[i].size(),NumOfElementNodes[i]);
-            cout<<"Number of Element Nodes Each of Element Type"<<i+1<<" = "<<NumOfElementNodes[i]<<"\n";
+            cout<<"Number of Nodes per Element of Element Type"<<i+1<<" = "<<NumOfElementNodes[i]<<"\n";
             cout<<"Element Type"<<i+1<<"= "<<GmshElementType[i]<<"\n";
             cout<<"Number of Element of Tag"<<i+1<<"= "<<elementTags[i].size()<<"\n\n";
             //cout<<"ElementTags size total "<<ElementTagSize<<"\n";
@@ -114,8 +110,29 @@ void libGmshReader::MeshReader::setElementNodes()
             //std::cout<<"ElementType= "<<GmshElementType[j]<<"Rows= "<<GmshNodeTag[j].n_rows<<"\nColumns= "<<GmshNodeTag[j].n_cols<<"\n";
             //Arranges the unique Node tags in an assending manner
             uvec ContainsNodeTags=unique(GmshNodeTag[j]);
+            cout<<"Unique Nodes = "<<ContainsNodeTags.n_rows<<"\n";
             //uvec NodeTagPos(1);
-            for (int i=0; i<(ContainsNodeTags.n_rows); i++)
+            std::thread *MeshReaderThreads = nullptr;
+            unsigned int NumofThreads=MeshReaderThreads->hardware_concurrency();
+            MeshReaderThreads = new std::thread [NumofThreads];
+            std::cout<<"Number of Threads to launch: "<<NumofThreads<<"\n";
+            //FillElementNodes(0, ContainsNodeTags.n_rows, j, ContainsNodeTags);
+            int k, stop=ContainsNodeTags.n_rows/NumofThreads;
+            for (k=0; k<NumofThreads; k++)
+            {
+                MeshReaderThreads[k]=std::thread (&MeshReader::FillElementNodes, this, k*stop, (k+1)*stop, j, std::ref(ContainsNodeTags) );
+            }
+            if (ContainsNodeTags.n_rows%NumofThreads!=0)
+            {
+                FillElementNodes(k*stop, ContainsNodeTags.n_rows, j, ContainsNodeTags);
+            }
+            for (k=0; k<NumofThreads; k++)
+            {
+                MeshReaderThreads[k].join();
+            }
+            delete [] MeshReaderThreads;
+            //FillElementNodes(0, ContainsNodeTags.n_rows, j, ContainsNodeTags);
+            /*for (int i=0; i<(ContainsNodeTags.n_rows); i++)
             {
                 //The goal is to find the same Node Tags in NodeTag and in GmshNodeTags.
                 uvec GmshElemNodeTagPos=find(GmshNodeTag[j]==ContainsNodeTags(i));
@@ -125,18 +142,60 @@ void libGmshReader::MeshReader::setElementNodes()
                 //the Node tag in the variable NodeTag. The hope is faster access
                 //during solving the FEM.
                 ElementNodes[j].elem(GmshElemNodeTagPos)=temp;
-                /*for(int k=0;k<GmshElemNodeTagPos.n_rows;k++)
-                {
-                    //Here the ElementNodes are set according to index position of
-                    //the Node tag in the variable NodeTag. The hope is faster access
-                    //during solving the FEM.
-                    std::cout<<"k="<<k;
-                    ElementNodes(GmshElemNodeTagPos(k))=NodeTagPos(0);
-                }*/
-        }
+            }*/
 
         }
     }
-
 }
+
+void libGmshReader::MeshReader::FillElementNodes(int start, int end, int ElementType, uvec &ContainsNodeTags)
+{
+    for (int i=start; i<(end); i++)
+    {
+        //The goal is to find the same Node Tags in NodeTag and in GmshNodeTags.
+        uvec GmshElemNodeTagPos=find(GmshNodeTag[ElementType]==ContainsNodeTags(i));
+        uvec NodeTagPos=find(NodeTag==ContainsNodeTags(i));
+        umat temp=NodeTagPos(0)*ones<umat>(GmshElemNodeTagPos.size());
+        //Here the ElementNodes are set according to index position of
+        //the Node tag in the variable NodeTag. The hope is faster access
+        //during solving the FEM.
+        ElementNodes[ElementType].elem(GmshElemNodeTagPos)=temp;
+        /*for(int k=0;k<GmshElemNodeTagPos.n_rows;k++)
+        {
+            //Here the ElementNodes are set according to index position of
+            //the Node tag in the variable NodeTag. The hope is faster access
+            //during solving the FEM.
+            std::cout<<"k="<<k;
+            ElementNodes[ElementType](GmshElemNodeTagPos(k))=NodeTagPos(0);
+        }*/
+    }
+}
+
+void libGmshReader::MeshReader::setFileName(std::string FileName)
+{
+    ///Check if file Exists.
+    std::ifstream fileExists(FileName);
+    if(fileExists)
+    {
+       NodeData::fileName=FileName;
+       NodeData::fileExist=true;
+       ElementData::fileName=NodeData::fileName;
+       ElementData::fileExist=NodeData::fileExist;
+       success=1;
+    }
+    else
+    {
+       std::cout<<"File Does not exist!\n";
+       NodeData::fileExist=false;
+       ElementData::fileExist=NodeData::fileExist;
+       success=0;
+    }
+}
+
+void libGmshReader::MeshReader::setDimension(int dimension)
+{
+    NodeData::dim=dimension;
+    ElementData::dim=NodeData::dim;
+}
+
 #endif

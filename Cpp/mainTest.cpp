@@ -31,11 +31,8 @@ int main()
     {
         std::cout<<"Number of Nodes= "<<Test.NumOfNodes<<"\n";
         // std::cout<<"Node Tags= \n"<<Test.NodeTag;
-        //cout<<"Element Nodes = \n"<<Test.ElementNodes;
-        //cout<<"Gmsh Element Nodes = \n"<<Test.GmshNodeTag;
+        //cout<<"Element Nodes = \n"<<Test.ElementNodes[0];
+        //cout<<"Gmsh Element Nodes = \n"<<Test.GmshNodeTag[0];
     }
-
     return 0;
-
-
 }
