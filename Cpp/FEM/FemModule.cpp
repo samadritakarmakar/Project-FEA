@@ -6,6 +6,4 @@ FemModule::FemModule(libGmshReader::MeshReader Mesh)
     {
         int NumOfElements=Mesh.ElementNodes[i].n_rows;
     }
-
-
 }

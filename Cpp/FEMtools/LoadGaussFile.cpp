@@ -1,12 +1,10 @@
 // Automatically translated using m2cpp 2.0 on 2018-12-13 19:10:32
 
-#ifndef LOADGAUSSFILE_M_HPP
-#define LOADGAUSSFILE_M_HPP
 
-#include <armadillo>
-using namespace arma ;
 
-struct _Property
+#include "LoadGaussFile.h"
+
+/*struct _Property
 {
   TYPE Type, degree ;
 } ;
@@ -89,5 +87,52 @@ TYPE LoadGaussFile(_Property Property)
     file = strcat("Data2/n", num2str(GaussDegree)) ;
   }
   return file ;
+}*/
+std::string FEMtools::LoadGaussFile(const libGmshReader::MeshReader &Mesh, const int & ElementType)
+{
+    int &MeshType= Mesh.GmshElementType[ElementType];
+    int &p= Mesh.order[ElementType];
+    float n;
+
+    std::string GaussFileName="GaussData/";
+    //for line elements
+    if (MeshType == 1 || MeshType == 8 || MeshType == 26 || MeshType == 27 || MeshType == 28 )
+    {
+        FEMtools::TensorGauss(p, n, GaussFileName);
+    }
+    //for triangle elements
+    else if (MeshType == 2)
+    {
+        n=1;
+        GaussFileName=GaussFileName+"DataTriangle/n"+std::to_string(int (n));
+    }
+    else if (MeshType == 9)
+    {
+        n=3;
+        GaussFileName=GaussFileName+"DataTriangle/n"+std::to_string(int (n));
+    }
+    else if (MeshType == 20  || MeshType == 21 || MeshType == 22 || MeshType == 23)
+    {
+        n=6;
+        GaussFileName=GaussFileName+"DataTriangle/n"+std::to_string(int (n));
+    }
+    else if (MeshType == 24 || MeshType == 25)
+    {
+        n=7;
+        GaussFileName=GaussFileName+"DataTriangle/n"+std::to_string(int (n));
+    }
+    //For Quadrilaterals
+    else if (MeshType == 3 || MeshType == 10 || MeshType == 16)
+    {
+        FEMtools::TensorGauss(p, n, GaussFileName);
+    }
+    return GaussFileName;
+    //
 }
-#endif
+
+void FEMtools::TensorGauss(int &p, float &n, std::string &GaussFileName)
+{
+    n=(p+2.0)/(float (p));
+    n=std::ceil(n);
+    GaussFileName=GaussFileName+"Data/n"+std::to_string(int (n));
+}

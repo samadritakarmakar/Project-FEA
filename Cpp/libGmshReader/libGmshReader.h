@@ -15,7 +15,8 @@ namespace libGmshReader
 class ElementData
 {
     public:
-    std::string *Type, *Degree, *GmshElementName;
+    //std::string *Type, *Degree,
+    std::string *GmshElementName;
     int *NumOfElementNodes, *order, *NumOfDimension, *GmshElementType, NumOfElementTypes;
     umat *ElementNodes, *ElementTag, *ContainsNodes, *GmshNodeTag;
     std::string fileName;
@@ -24,8 +25,8 @@ class ElementData
     void GetElementData();
     void AllocateElementData()
     {
-        Type=new std::string [NumOfElementTypes];
-        Degree=new std::string [NumOfElementTypes];
+        //Type=new std::string [NumOfElementTypes];
+        //Degree=new std::string [NumOfElementTypes];
         GmshElementName=new std::string [NumOfElementTypes];
         NumOfElementNodes =new int [NumOfElementTypes];
         order=new int [NumOfElementTypes];
@@ -38,8 +39,8 @@ class ElementData
     }
     void DeleteElementData()
     {
-        delete []Type;
-        delete []Degree;
+        //delete []Type;
+        //delete []Degree;
         delete []GmshElementName;
         delete []NumOfElementNodes;
         delete []order;

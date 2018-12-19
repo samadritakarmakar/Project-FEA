@@ -39,10 +39,20 @@ include_directories ("${PROJECT_SOURCE_DIR}/libGmshReader/GmshApi/")
 add_subdirectory(libGmshReader/GmshApi/)
 include_directories ("${PROJECT_SOURCE_DIR}/libGmshReader/")
 add_subdirectory(libGmshReader/)
-#include_directories ("${PROJECT_SOURCE_DIR}/FEMtools/")
-#add_subdirectory(FEMtools/)
+include_directories ("${PROJECT_SOURCE_DIR}/FEMtools/")
+add_subdirectory(FEMtools/)
 include_directories ("${PROJECT_SOURCE_DIR}/FEM/")
 add_subdirectory(FEM/)
+
+
+set (COPY_FILES GaussData)
+foreach(loop_var ${COPY_FILES})
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${loop_var} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+endforeach(loop_var)
+
+
+
+
 
 add_executable(Prj-FEA2 mainTest.cpp)
 
