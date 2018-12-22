@@ -33,6 +33,7 @@ int main()
         // std::cout<<"Node Tags= \n"<<Test.NodeTag;
         //cout<<"Element Nodes = \n"<<Test.ElementNodes[0];
         //cout<<"Gmsh Element Nodes = \n"<<Test.GmshNodeTag[0];
+        FemModule FEMmodel1(Test);
     }
     return 0;
 }

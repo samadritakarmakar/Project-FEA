@@ -59,8 +59,8 @@ void libGmshReader::ElementData::GetElementData()
             gmsh::model::mesh::getElementProperties(GmshElementType[i], GmshElementName[i], dim2, order[i], NumOfElementNodes[i], parametricCoord);
             ElementTag[i].set_size(1,elementTags[i].size());
             GmshNodeTag[i].set_size(elementTags[i].size(),NumOfElementNodes[i]);
-            cout<<"Number of Nodes per Element of Element Type"<<i+1<<" = "<<NumOfElementNodes[i]<<"\n";
-            cout<<"Element Type"<<i+1<<"= "<<GmshElementType[i]<<"\n";
+            cout<<"Number of Nodes per Element of Element Type "<<i+1<<" = "<<NumOfElementNodes[i]<<"\n";
+            cout<<"Element Type"<<i+1<<"= "<<GmshElementName[i]<<"\n";
             cout<<"Number of Element of Tag"<<i+1<<"= "<<elementTags[i].size()<<"\n\n";
             //cout<<"ElementTags size total "<<ElementTagSize<<"\n";
         }

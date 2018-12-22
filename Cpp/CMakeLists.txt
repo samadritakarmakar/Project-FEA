@@ -57,7 +57,7 @@ endforeach(loop_var)
 add_executable(Prj-FEA2 mainTest.cpp)
 
 #target_link_libraries (Prj-FEA2 libMeshReader armadillo lapack openblas gmsh superlu)
-target_link_libraries (Prj-FEA2 libGmshReader armadillo lapack openblas superlu ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a GmshApi)
+target_link_libraries (Prj-FEA2 libGmshReader armadillo lapack openblas superlu ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a GmshApi FemModule FEMtools)
 target_link_libraries(Prj-FEA2 PRIVATE "${OpenMP_CXX_FLAGS}")
 target_compile_options(Prj-FEA2 PRIVATE "${OpenMP_CXX_FLAGS}")
 # Use the Widgets module from Qt 5.

@@ -3,6 +3,7 @@
 #include <armadillo>
 #include <string>
 #include <cmath>
+#include <iostream>
 #include "libGmshReader.h"
 namespace FEMtools
 {
