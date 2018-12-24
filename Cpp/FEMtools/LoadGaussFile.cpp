@@ -4,90 +4,6 @@
 
 #include "LoadGaussFile.h"
 
-/*struct _Property
-{
-  TYPE Type, degree ;
-} ;
-
-TYPE LoadGaussFile(_Property Property)
-{
-  TYPE GaussDegree, file ;
-  _Property Property ;
-  if ((strcmp(Property.Type, "1D")))
-  {
-    GaussDegree = 2*str2num(Property.degree) ;
-    file = strcat("Data2/n", num2str(GaussDegree)) ;
-  }
-  else if ((strcmp(Property.Type, "Triangle")))
-  {
-    TYPE _var_TYPE = (Property.degree) ;
-    if ("1" == _var_TYPE)
-    {
-      GaussDegree = 1 ;
-    }
-    else if ("2" == _var_TYPE)
-    {
-      GaussDegree = 3 ;
-    }
-    else if ("3" == _var_TYPE)
-    {
-      GaussDegree = 4 ;
-    }
-    file = strcat("DataTriangle2/n", num2str(GaussDegree)) ;
-  }
-  else if ((strcmp(Property.Type, "Quadrilateral")))
-  {
-    TYPE _var_TYPE = (Property.degree) ;
-    if ("1" == _var_TYPE)
-    {
-      GaussDegree = 2 ;
-    }
-    else if ("Biquadratic" == _var_TYPE)
-    {
-      GaussDegree = 3 ;
-    }
-    else if ("Serendipity" == _var_TYPE)
-    {
-      GaussDegree = 3 ;
-    }
-    file = strcat("Data2/n", num2str(GaussDegree)) ;
-  }
-  else if ((strcmp(Property.Type, "Tetrahedral")))
-  {
-    TYPE _var_TYPE = (Property.degree) ;
-    if ("1" == _var_TYPE)
-    {
-      GaussDegree = 1 ;
-    }
-    else if ("2" == _var_TYPE)
-    {
-      GaussDegree = 4 ;
-    }
-    else if ("3" == _var_TYPE)
-    {
-      GaussDegree = 5 ;
-    }
-    file = strcat("DataTetrahedral2/n", num2str(GaussDegree)) ;
-  }
-  else if ((strcmp(Property.Type, "Hexahedral")))
-  {
-    TYPE _var_TYPE = (Property.degree) ;
-    if ("1" == _var_TYPE)
-    {
-      GaussDegree = 2 ;
-    }
-    else if ("2" == _var_TYPE)
-    {
-      GaussDegree = 3 ;
-    }
-    else if ("3" == _var_TYPE)
-    {
-      GaussDegree = 5 ;
-    }
-    file = strcat("Data2/n", num2str(GaussDegree)) ;
-  }
-  return file ;
-}*/
 std::string FEMtools::LoadGaussFile(const libGmshReader::MeshReader &Mesh, const int &ElementType)
 {
     //std::string &ElementName =Mesh.GmshElementName[ElementType];
@@ -129,6 +45,39 @@ std::string FEMtools::LoadGaussFile(const libGmshReader::MeshReader &Mesh, const
     else if (ElementName.compare("Quadrilateral")==0)
     {
         FEMtools::TensorGauss(p, n, GaussFileName);
+    }
+    //For Tetrahedrals
+    else if (ElementName.compare("Tetrahedron")==0)
+    {
+        if (p==1)
+        {
+            n=1;
+        }
+        else if (p==2)
+        {
+            n=4;
+        }
+        else {
+            n=15;
+        }
+        GaussFileName=GaussFileName+"DataTetrahedral/n"+std::to_string(int (n));
+    }
+    //For Hexahedrals
+    else if (ElementName.compare("Hexahedron")==0)
+    {
+        FEMtools::TensorGauss(p, n, GaussFileName);
+    }
+    else if (ElementName.compare("Prism")==0)
+    {
+        FEMtools::TensorGauss(p, n, GaussFileName);
+    }
+    else if (ElementName.compare("Pyramid")==0)
+    {
+        FEMtools::TensorGauss(p, n, GaussFileName);
+    }
+    else
+    {
+        std::cout<<"Could not find appropriate Quadrature\n";
     }
     std::cout<<"Loading Quadrature File: "<<GaussFileName<<"\n";
     return GaussFileName;

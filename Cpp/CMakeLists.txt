@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-project(Project-FEA2)
+project(Project-FEA2 CXX)
 
 #set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_BUILD_TYPE Debug)
@@ -50,16 +50,21 @@ foreach(loop_var ${COPY_FILES})
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${loop_var} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 endforeach(loop_var)
 
+set (libGmsh GmshApi)
+set (GmshStatic ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
+set (PreInstalled armadillo lapack openblas superlu)
+set (InternalDev libGmshReader FemModule FEMtools)
 
-
-
+add_library(Prj-FEA ProjectFea.h ProjectFea.cpp)
+target_link_libraries (Prj-FEA ${PreInstalled} ${libGmsh} ${InternalDev} ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
+target_link_libraries(Prj-FEA PRIVATE "${OpenMP_CXX_FLAGS}")
+target_compile_options(Prj-FEA PRIVATE "${OpenMP_CXX_FLAGS}")
 
 add_executable(Prj-FEA2 mainTest.cpp)
 
-#target_link_libraries (Prj-FEA2 libMeshReader armadillo lapack openblas gmsh superlu)
-target_link_libraries (Prj-FEA2 libGmshReader armadillo lapack openblas superlu ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a GmshApi FemModule FEMtools)
-target_link_libraries(Prj-FEA2 PRIVATE "${OpenMP_CXX_FLAGS}")
-target_compile_options(Prj-FEA2 PRIVATE "${OpenMP_CXX_FLAGS}")
+target_link_libraries (Prj-FEA2 Prj-FEA)
+#target_link_libraries(Prj-FEA2 PRIVATE "${OpenMP_CXX_FLAGS}")
+#target_compile_options(Prj-FEA2 PRIVATE "${OpenMP_CXX_FLAGS}")
 # Use the Widgets module from Qt 5.
 #target_link_libraries(GATE_calc Qt5::Widgets Qt5WebKitWidgets)
 

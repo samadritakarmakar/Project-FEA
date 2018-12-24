@@ -1,10 +1,12 @@
-#include<stdio.h>
+/*#include<stdio.h>
 #include <string>
 #include <armadillo>
 //#include "libMeshReader/libMeshReader.h"
 //#include "libGmshReader/libGmshReader.h"
 #include "libGmshReader.h"
-#include "FemModule.h"
+#include "FemModule.h"*/
+
+#include "ProjectFea.h"
 
 using namespace arma;
 int main()
