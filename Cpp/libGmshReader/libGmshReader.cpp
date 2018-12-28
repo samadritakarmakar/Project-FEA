@@ -110,7 +110,8 @@ void libGmshReader::MeshReader::setElementNodes()
             //std::cout<<"ElementType= "<<GmshElementType[j]<<"Rows= "<<GmshNodeTag[j].n_rows<<"\nColumns= "<<GmshNodeTag[j].n_cols<<"\n";
             //Arranges the unique Node tags in an assending manner
             uvec ContainsNodeTags=unique(GmshNodeTag[j]);
-            cout<<"Unique Nodes = "<<ContainsNodeTags.n_rows<<"\n";
+            ContainsNodes[j]=ContainsNodeTags;
+            cout<<"Unique Nodes of Type "<<GmshElementName[j]<<" = "<<ContainsNodeTags.n_rows<<"\n";
             //uvec NodeTagPos(1);
             std::thread *MeshReaderThreads = nullptr;
             unsigned int NumofThreads=MeshReaderThreads->hardware_concurrency();

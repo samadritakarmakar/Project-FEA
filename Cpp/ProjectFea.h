@@ -3,3 +3,4 @@
 #include <armadillo>
 #include "libGmshReader.h"
 #include "FemModule.h"
+#include "models.h"

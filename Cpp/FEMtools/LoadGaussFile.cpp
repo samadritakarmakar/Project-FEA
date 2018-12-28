@@ -1,7 +1,6 @@
 // Automatically translated using m2cpp 2.0 on 2018-12-13 19:10:32
 
 
-
 #include "LoadGaussFile.h"
 
 std::string FEMtools::LoadGaussFile(const libGmshReader::MeshReader &Mesh, const int &ElementType)
