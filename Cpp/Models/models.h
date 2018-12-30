@@ -12,10 +12,11 @@ public:
     ///Pass "poisson2D" to use Poisson 2D Model.
     /// Pass "poisson3D" to use Poisson 3D Model.
     Models(std::string ModelName);
-    void RunModel();
+    void RunFunction();
     std::string ModelName;
-    mat constants;
-    int NoOfConstants, VectorLevel;
+    vec constants;
+    int NoOfConstants, coupleLevel;
+    uvec VectorLevel;
 protected:
     void (Models::*ModelFunction)();
     void poisson();

@@ -21,9 +21,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #find_package(Qt5Widgets REQUIRED)
 
 #Find Armadillo 
-set (LoadGaussFile LoadGaussFile.h LoadGaussFile.cpp)
+set (LoadGaussFile LoadGaussFile.h LoadGaussFile.cpp GetNodePostions.cpp)
 
 # Tell CMake to create the helloworld executable
 #add_executable(K_assmbly k_spring.cpp k_truss.cpp k_assmbly_file.cpp)
-add_library(FEMtools  ${LoadGaussFile})#BuildCosMatrix.cpp VectorizeGradu.cpp VectorizeX.cpp BuildLocalMatrices.cpp  GetNodePostions.cpp TestFunctionDot.cpp  VectorizePhi.cpp)
+add_library(FEMtools  FEMtools.h ${LoadGaussFile})#BuildCosMatrix.cpp VectorizeGradu.cpp VectorizeX.cpp BuildLocalMatrices.cpp  GetNodePostions.cpp TestFunctionDot.cpp  VectorizePhi.cpp)
 

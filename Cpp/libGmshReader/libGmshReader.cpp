@@ -199,4 +199,18 @@ void libGmshReader::MeshReader::setDimension(int dimension)
     ElementData::dim=NodeData::dim;
 }
 
+void libGmshReader::MeshReader::FindMaxNodeNumber()
+{
+    maxNodeNumber=0;
+    for (int i=0; i<NumOfElementTypes; i++)
+    {
+        int LargestNode=ContainsNodes[i](ContainsNodes[i].n_rows-1);
+        if (LargestNode>maxNodeNumber)
+        {
+            maxNodeNumber=LargestNode;
+        }
+    }
+    std::cout<<"Largest Node Number is = "<<maxNodeNumber<<"\n";
+}
+
 #endif

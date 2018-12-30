@@ -2,18 +2,22 @@
 #define FEMMODULE_H
 #include <armadillo>
 #include "libGmshReader.h"
-#include "LoadGaussFile.h"
+//#include "LoadGaussFile.h"
+#include "FEMtools.h"
 #include "models.h"
 using namespace arma;
 class FemModule
 {
 public:
 
-    FemModule(libGmshReader::MeshReader &Mesh, Models &model);
-    int *GaussLength,  *DependentEpsilon, *dof;
+    FemModule(const libGmshReader::MeshReader &Mesh, const Models &model);
+    int *GaussLength=nullptr,  *DependentEpsilon=nullptr, *dof=nullptr;
+    umat *NodePositions=nullptr;
     ~FemModule();
 protected:
-    void SetNoOfInstances(libGmshReader::MeshReader &Mesh);
+    void SetNoOfInstances(const libGmshReader::MeshReader &Mesh, const Models &model);
+    void SetNodePositions(int couplingNumber, const umat &ElementNodes, int vectorLevel);
+    void AssemblePerTermMatrix();
 };
 
 #endif // FEMMODULE_H

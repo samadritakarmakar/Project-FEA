@@ -17,7 +17,7 @@ class ElementData
     public:
     //std::string *Type, *Degree,
     std::string *GmshElementName;
-    int *NumOfElementNodes, *order, *NumOfDimension, *GmshElementType, NumOfElementTypes;
+    int *NumOfElementNodes, *order, *NumOfDimension, *GmshElementType, NumOfElementTypes, maxNodeNumber;
     umat *ElementNodes, *ElementTag, *ContainsNodes, *GmshNodeTag;
     std::string fileName;
     bool fileExist;
@@ -98,6 +98,7 @@ public:
         GetElementData();
         ///Sets the variable ElementNodes Mesh file
         setElementNodes();
+        FindMaxNodeNumber();
         end=std::chrono::system_clock::now();
         std::cout<<"Done Reading the Mesh!\n";
         std::chrono::duration<double> elapsed_seconds = end-start;
@@ -118,6 +119,8 @@ public:
 
     ///sets the Data of ElementNodes.
     void setElementNodes();
+    ///finds max node number
+    void FindMaxNodeNumber();
 
     int success;
 //private:

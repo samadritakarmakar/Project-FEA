@@ -35,9 +35,9 @@ int main()
         // std::cout<<"Node Tags= \n"<<Test.NodeTag;
         //cout<<"Element Nodes = \n"<<Test.ElementNodes[0];
         //cout<<"Gmsh Element Nodes = \n"<<Test.GmshNodeTag[0];
-        Models Model1("poisson1D");
+        Models Model1("poisson3D");
         FemModule FEMmodel1(Test, Model1);
-        Model1.RunModel();
+        Model1.RunFunction();
     }
     return 0;
 }
