@@ -23,10 +23,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 #Find Armadillo
 
-set (MthModels poisson.cpp)
+set (MthModels poisson.cpp FemVariables.h FemVariables.cpp)
 
 
 # Tell CMake to create the helloworld executable
 #add_executable(K_assmbly k_spring.cpp k_truss.cpp k_assmbly_file.cpp)
-add_library(MathModels models.h models.cpp poisson.cpp)
+add_library(MathModels models.h models.cpp ${MthModels})
 

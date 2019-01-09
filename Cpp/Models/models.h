@@ -19,6 +19,7 @@ public:
     uvec VectorLevel;
 protected:
     void (Models::*ModelFunction)();
+    void InitializePoission(std::string ModelName);
     void poisson();
 };
 

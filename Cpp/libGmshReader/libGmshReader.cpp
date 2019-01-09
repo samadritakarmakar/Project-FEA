@@ -190,6 +190,7 @@ void libGmshReader::MeshReader::setFileName(std::string FileName)
        NodeData::fileExist=false;
        ElementData::fileExist=NodeData::fileExist;
        success=0;
+       throw;
     }
 }
 

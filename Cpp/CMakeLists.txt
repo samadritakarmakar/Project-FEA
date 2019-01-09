@@ -46,6 +46,11 @@ add_subdirectory(Models/)
 include_directories ("${PROJECT_SOURCE_DIR}/FEM/")
 add_subdirectory(FEM/)
 
+if(OPENMP_FOUND)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
 
 set (COPY_FILES GaussData)
 foreach(loop_var ${COPY_FILES})
@@ -59,8 +64,8 @@ set (InternalDev libGmshReader FemModule MathModels FEMtools)
 
 add_library(Prj-FEA ProjectFea.h ProjectFea.cpp)
 target_link_libraries (Prj-FEA ${PreInstalled} ${libGmsh} ${InternalDev} ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
-target_link_libraries(Prj-FEA PRIVATE "${OpenMP_CXX_FLAGS}")
-target_compile_options(Prj-FEA PRIVATE "${OpenMP_CXX_FLAGS}")
+#target_link_libraries(Prj-FEA PRIVATE "${OpenMP_CXX_FLAGS}")
+#target_compile_options(Prj-FEA PRIVATE "${OpenMP_CXX_FLAGS}")
 
 add_executable(Prj-FEA2 mainTest.cpp)
 

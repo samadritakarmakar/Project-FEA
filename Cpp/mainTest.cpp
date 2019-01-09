@@ -8,7 +8,7 @@
 
 #include "ProjectFea.h"
 
-using namespace arma;
+//using namespace arma;
 int main()
 {
     mat b,c,d;
@@ -35,7 +35,7 @@ int main()
         // std::cout<<"Node Tags= \n"<<Test.NodeTag;
         //cout<<"Element Nodes = \n"<<Test.ElementNodes[0];
         //cout<<"Gmsh Element Nodes = \n"<<Test.GmshNodeTag[0];
-        Models Model1("poisson3D");
+        Models Model1("poisson2D");
         FemModule FEMmodel1(Test, Model1);
         Model1.RunFunction();
     }
