@@ -7,7 +7,7 @@
 #include "FemModule.h"*/
 
 #include "ProjectFea.h"
-
+void setConstants(Models &Model1);
 //using namespace arma;
 int main()
 {
@@ -36,8 +36,18 @@ int main()
         //cout<<"Element Nodes = \n"<<Test.ElementNodes[0];
         //cout<<"Gmsh Element Nodes = \n"<<Test.GmshNodeTag[0];
         Models Model1("poisson2D");
+        setConstants(Model1);
         FemModule FEMmodel1(Test, Model1);
         Model1.RunFunction();
     }
     return 0;
+}
+
+void setConstants(Models &Model1)
+{
+    for (int i=0;i<Model1.NoOfConstants;i++)
+    {
+        std::cout<<"Enter the value of constant "<<(i+1)<<" ";
+        std::cin>>Model1.constants(i);
+    }
 }
