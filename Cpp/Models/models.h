@@ -2,9 +2,10 @@
 #define MODELS_H
 #include <armadillo>
 #include <string>
+#include <FemVariables.h>
 using namespace arma;
 
-class Models
+class Models: public FemVariables
 {
 public:
     ///Initializes the Mathmatical Model.

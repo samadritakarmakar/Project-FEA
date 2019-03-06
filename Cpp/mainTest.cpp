@@ -6,8 +6,9 @@
 #include "libGmshReader.h"
 #include "FemModule.h"*/
 
+#include "UserFunctions.h"
 #include "ProjectFea.h"
-void setConstants(Models &Model1);
+//void setConstants(Models &Model1);
 //using namespace arma;
 int main()
 {
@@ -39,10 +40,12 @@ int main()
         setConstants(Model1);
         FemModule FEMmodel1(Test, Model1);
         Model1.RunFunction();
+
     }
+
     return 0;
 }
-
+/*
 void setConstants(Models &Model1)
 {
     for (int i=0;i<Model1.NoOfConstants;i++)
@@ -51,3 +54,4 @@ void setConstants(Models &Model1)
         std::cin>>Model1.constants(i);
     }
 }
+*/
