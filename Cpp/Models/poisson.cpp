@@ -8,6 +8,7 @@ void Models::InitializePoission(std::string ModelName)
     if (ModelName.compare("poisson1D")==0)
     {
         VectorLevel(0)=1;
+
     }
     else if (ModelName.compare("poisson2D")==0)
     {
@@ -23,6 +24,9 @@ void Models::InitializePoission(std::string ModelName)
         std::cout<<"Please check your Model Input or contact your developer.\n";
         throw;
     }
+    SetNoOfLHSmatrix(1);
+    SetNoOfRHSmatrix(0);
+    SetNoOfRHSvector(1);
     std::cout<<"Model Poission Initialized"<<"\n";
 }
 

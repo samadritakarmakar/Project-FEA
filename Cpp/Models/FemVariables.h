@@ -10,7 +10,7 @@ class FemVariables
 public:
     FemVariables();
     ~FemVariables();
-    mat *LHSmatrix, *RHSmatrix, *RHSvector;
+    sp_mat *LHSmatrix, *RHSmatrix, *RHSvector;
     int *BuildMatrixList;
     void SetNoOfLHSmatrix(int instances);
     void SetNoOfRHSmatrix(int instances);
