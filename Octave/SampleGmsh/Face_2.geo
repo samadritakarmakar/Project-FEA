@@ -24,3 +24,17 @@ Line(4) = {5, 6};
 Line(5) = {1, 6};
 //+
 Line(6) = {3, 2};
+//+
+Curve Loop(1) = {5, -4, 3, -2, 6, -1};
+//+
+Plane Surface(1) = {1};
+//+
+Physical Curve("dirichlet") = {5};
+//+
+Physical Curve("neumann", 2) = {3};
+//+
+Physical Surface("surfaceGroup", 3) = {1};
+//+
+Physical Point("points1", 4) = {6, 5, 4};
+//+
+Physical Point("points2", 5) = {3, 2, 1};

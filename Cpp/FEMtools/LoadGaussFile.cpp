@@ -9,8 +9,8 @@ std::string FEMtools::LoadGaussFile(const libGmshReader::MeshReader &Mesh, const
     int PosOfSpace= Mesh.GmshElementName[ElementType].find_first_of(' ');
     std::string ElementName=Mesh.GmshElementName[ElementType].substr(0,PosOfSpace);
     std::cout<<"Loading Gauss File of Element Type: "<<ElementName<<"\n";
-    int &MeshType= Mesh.GmshElementType[ElementType];
-    int &p= Mesh.order[ElementType];
+    int MeshType= Mesh.GmshElementType[ElementType];
+    int p= Mesh.order[ElementType];
     float n;
 
     std::string GaussFileName="GaussData/";

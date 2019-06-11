@@ -131,4 +131,7 @@ Fa
 1101000
 +2 0 *
 
-+1 0 
++1 0 //+
+Physical Curve("dirichlet") = {6};
+//+
+Physical Curve("neumann") = {4};

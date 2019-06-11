@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-project(Project-FEA2 CXX)
+project(FEMtools CXX)
 
 set(CMAKE_BUILD_TYPE Release)
 ## Compiler flags
@@ -25,5 +25,5 @@ set (LoadGaussFile LoadGaussFile.h LoadGaussFile.cpp GetNodePostions.cpp)
 
 # Tell CMake to create the helloworld executable
 #add_executable(K_assmbly k_spring.cpp k_truss.cpp k_assmbly_file.cpp)
-add_library(FEMtools  FEMtools.h ${LoadGaussFile})#BuildCosMatrix.cpp VectorizeGradu.cpp VectorizeX.cpp BuildLocalMatrices.cpp  GetNodePostions.cpp TestFunctionDot.cpp  VectorizePhi.cpp)
+add_library(${PROJECT_NAME} FEMtools.h ${LoadGaussFile})#BuildCosMatrix.cpp VectorizeGradu.cpp VectorizeX.cpp BuildLocalMatrices.cpp  GetNodePostions.cpp TestFunctionDot.cpp  VectorizePhi.cpp)
 

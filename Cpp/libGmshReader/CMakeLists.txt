@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-project(Project-FEA2 CXX)
+#project(Project-FEA2 CXX)
 
 set(CMAKE_BUILD_TYPE Release)
 ## Compiler flags

@@ -1,5 +1,5 @@
-// Gmsh project created on Mon Mar 18 23:34:24 2019
-SetFactory("OpenCASCADE");
+//+
+SetFactory("Built-in");
 //+
 Point(1) = {-1, -1, 0, 1.0};
 //+
@@ -17,28 +17,13 @@ Line(3) = {3, 4};
 //+
 Line(4) = {4, 1};
 //+
-Curve Loop(1) = {3, 4, 1, 2};
+Curve Loop(1) = {1, 2, 3, 4};
 //+
-Curve Loop(2) = {3, 4, 1, 2};
+Plane Surface(1) = {1};
 //+
-Plane Surface(1) = {2};
+Transfinite Curve {1, 2, 3, 4} = 1 Using Progression 1;
+
 //+
-Transfinite Surface {1};
+Transfinite Surface {1} = {1, 2, 3, 4};
 //+
-Transfinite Surface {1};
-//+
-Transfinite Surface {1} Right;
-//+
-Transfinite Surface {1};
-//+
-Transfinite Surface {1};
-//+
-Characteristic Length {1} = 1;
-//+
-Field[1] = Distance;
-//+
-Delete Field [1];
-//+
-Transfinite Surface {1};
-//+
-Transfinite Surface {1};
+Recombine Surface {1};
