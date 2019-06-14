@@ -88,6 +88,7 @@ public:
                 sp_mat A_temp=sp_mat(add_values, locations, values, A.n_rows, A.n_cols, sort_locations, check_for_zeros);*/
 
                 sp_mat A_temp=BatchFill_Atemp(A, ElmntTyp, positions);
+                //cout<<"ElmntNmbr ="<<ElmntNmbr<<"\n"<<mat(a_Internal.ResultingMat)<<"\n";
                 A=A+A_temp;
 
                 a_Internal.NextElementNumber();

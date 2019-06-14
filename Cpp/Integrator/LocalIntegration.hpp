@@ -32,12 +32,14 @@ public:
         a.set_v_Internal(v);
         //cout<<"Element Type ="<<a.ElementType<<"Gauss pt is at "<<a.GaussPntr<<"\n";
         a=weak_form(a,u,v);
+        //cout<<mat(a.ResultingMat)<<"\n";
         int NoOfGaussPnts=u.GetNumberOfGaussPoints(a.ElementType);
         for (int i=0; i<NoOfGaussPnts-1; i++)
         {
             a.NextGaussPntr();
             //cout<<"Element Type ="<<a.ElementType<<"Gauss pt is at "<<a.GaussPntr<<"i= "<<i<<"\n";
             a=a.ResultingMat+weak_form(a,u,v);
+            //cout<<mat(a.ResultingMat)<<"\n";
         }
         a.GaussPntr=0;
     }

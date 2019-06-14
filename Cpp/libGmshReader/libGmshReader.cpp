@@ -111,7 +111,7 @@ void libGmshReader::ElementData::GetGmshElementNameOnly()
     }
 }
 
-void libGmshReader::MeshReader::setElementNodes()
+void libGmshReader::MeshReader:: setElementNodes()
 {
     if (success)
     {
@@ -119,9 +119,9 @@ void libGmshReader::MeshReader::setElementNodes()
         {
             //Size of ElementNodes is same as GmshNodeTag variable
             ElementNodes[j].set_size(GmshNodeTag[j].n_rows,GmshNodeTag[j].n_cols);
-            //std::cout<<"ElementType= "<<GmshElementType[j]<<"Rows= "<<GmshNodeTag[j].n_rows<<"\nColumns= "<<GmshNodeTag[j].n_cols<<"\n";
+            std::cout<<"ElementType= "<<GmshElementType[j]<<"Rows= "<<GmshNodeTag[j].n_rows<<"\nColumns= "<<GmshNodeTag[j].n_cols<<"\n";
             //Arranges the unique Node tags in an assending manner
-            uvec ContainsNodeTags=unique(GmshNodeTag[j]);
+            uvec ContainsNodeTags=vectorise(unique(GmshNodeTag[j]));
             ContainsNodes[j]=ContainsNodeTags;
             cout<<"Unique Nodes of Type "<<GmshElementName[j]<<" = "<<ContainsNodeTags.n_rows<<"\n";
             //uvec NodeTagPos(1);

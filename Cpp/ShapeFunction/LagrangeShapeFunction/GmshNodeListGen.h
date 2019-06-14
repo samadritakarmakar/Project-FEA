@@ -123,6 +123,7 @@ void GetNodeList_4_1_Element(const std::string &FolderName, const std::string &F
            NodeList(i,j)=coord[j];
         }
     }
+    remove((FolderName+FileName+".msh").c_str());
     gmsh::write(FolderName+FileName+".msh");
     gmsh::finalize();
 }

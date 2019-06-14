@@ -13,6 +13,7 @@
 #include "Expression.hpp"
 #include "Variable.hpp"
 #include "GmshWriter.hpp"
+#include "PreDefinedElasticityTensor.hpp"
 
 
 #endif // PROJECTFEA_HPP

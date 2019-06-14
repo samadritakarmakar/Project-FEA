@@ -11,7 +11,6 @@ public:
     }
     sp_mat weak_form(Form<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v)
     {
-        //return a.inner(a.curl(v),a.curl(u))*a.dX(u);
         return a.inner(a.grad(v),a.grad(u))*a.dX(u);
     }
 };
@@ -121,8 +120,8 @@ int main(int argc, char *argv[])
     SystemAssembler<new_Neu_Surf_LclIntgrtr, TrialFunctionNeumannSurface> systmAssmbly3(a3, u_surf, v_surf);
     systmAssmbly3.RunSystemAssemblyVector(lclintgtr3, b.Vector[0]);
 
-    Form<TrialFunctionNeumannLine> a4;
-    TrialFunctionNeumannLine u_line(u,0);
+    //Form<TrialFunctionNeumannLine> a4;
+    //TrialFunctionNeumannLine u_line(u,0);
     /*TestFunctionGalerkin<TrialFunctionNeumannLine> v_line(u_line);
     new_Neu_Line_LclIntgrtr lcl_intgrt4(a4,u_line,v_line);
     SystemAssembler<new_Neu_Line_LclIntgrtr, TrialFunctionNeumannLine> systmAssmbly4(a4,u_line, v_line);

@@ -87,6 +87,16 @@ public:
         return v.Get_grad_v(ElementType, ElementNumber, GaussPntr);
     }
 
+     sp_mat sym_grad(GenericTrialFunction& u)
+     {
+         return u.Get_Sym_grad_u(ElementType, ElementNumber, GaussPntr);
+     }
+
+     sp_mat sym_grad(TestFunctionGalerkin<GenericTrialFunction>& v)
+     {
+         return v.Get_Sym_grad_v(ElementType, ElementNumber, GaussPntr);
+     }
+
      sp_mat transpose_grad(GenericTrialFunction& u)
      {
          return u.GetTranspose_grad_u(ElementType, ElementNumber, GaussPntr);
@@ -178,7 +188,7 @@ public:
         //set_u_Internal(u);
         //cout<<"Gauss pt is at "<<GaussPntr<<"\n";
         u.Get_F(ElementType, ElementNumber, GaussPntr, F);
-        return u_Internal->WeightAt(ElementType, GaussPntr)*norm(F);
+        return u_Internal->WeightAt(ElementType, GaussPntr)*det(F);
     }
 
 

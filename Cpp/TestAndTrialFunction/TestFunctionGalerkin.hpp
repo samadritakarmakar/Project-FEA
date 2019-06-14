@@ -29,6 +29,11 @@ public:
         return u->Get_grad_u(ElementType, ElementNumber, GaussPntr).t();
     }
 
+     sp_mat Get_Sym_grad_v(int ElementType, int ElementNumber, int GaussPntr)
+     {
+         return u->Get_Sym_grad_u(ElementType, ElementNumber, GaussPntr).t();
+     }
+
      sp_mat GetTranspose_grad_v(int ElementType,int ElementNumber,int GaussPntr)
      {
          return u->GetTranspose_grad_u(ElementType, ElementNumber, GaussPntr).t();

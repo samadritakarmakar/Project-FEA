@@ -36,8 +36,11 @@ include_directories ("${PROJECT_SOURCE_DIR}/Integrator/")
 add_subdirectory(Integrator/)
 include_directories ("${PROJECT_SOURCE_DIR}/DirichletBC/")
 add_subdirectory(DirichletBC/)
+include_directories("${PROJECT_SOURCE_DIR}/Models")
+add_subdirectory(Models/)
 include_directories("${PROJECT_SOURCE_DIR}/GmshWriter")
 add_subdirectory(GmshWriter/)
+
 
 #set (PreInstalled armadillo blas lapack)
 
@@ -51,7 +54,15 @@ add_executable(${PROJECT_NAME} ProjectFEA.hpp main.cpp)
 target_link_libraries (${PROJECT_NAME} ${PreDev} ${PreInstalled} ${InternalDev} ${CMAKE_THREAD_LIBS_INIT}
     ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
 
-set (COPY_FILES BaseGeom GaussData)
+add_executable(ElasticityEx ProjectFEA.hpp ElasticityExample.cpp)
+target_link_libraries (ElasticityEx ${PreDev} ${PreInstalled} ${InternalDev} ${CMAKE_THREAD_LIBS_INIT}
+    ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
+
+add_executable(OneElmntVrfy ProjectFEA.hpp OneElmntVrfy.cpp)
+target_link_libraries (OneElmntVrfy ${PreDev} ${PreInstalled} ${InternalDev} ${CMAKE_THREAD_LIBS_INIT}
+    ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
+
+set (COPY_FILES BaseGeom GaussData OneElmntGeom SampleGmsh)
 foreach(loop_var ${COPY_FILES})
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${loop_var} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 endforeach(loop_var)

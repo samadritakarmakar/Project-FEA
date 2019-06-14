@@ -22,6 +22,7 @@ public:
     std::vector<int> NoOfGaussPts;
     std::vector<int> NoOfElements;
     std::vector<umat> ElmntNodes;
+    std::vector<std::vector<mat>> dN_by_dEps;
     libGmshReader::MeshReader *Msh;
     int MeshDimension;
     int vectorLvl;
@@ -52,7 +53,7 @@ public:
     }
 
     /// Must use this to initialize the Trial Function
-    TrialFunction(libGmshReader::MeshReader& Mesh, int& vectorLevel)
+    TrialFunction(libGmshReader::MeshReader& Mesh, int vectorLevel)
     {
         NewMeshInstanceCreated=false;
         //std::cout<<"Constructor runs Mesh type !!\n";
@@ -288,6 +289,7 @@ public:
      sp_mat Get_grad_u(int ElementType, int ElementNumber, int GaussPntr)
     {
         mat dN_by_dx_atGaussPt=Get_dN_by_dx(ElementType, ElementNumber, GaussPntr);
+        //cout<<"dN_by_dx_atGaussPt=\n"<<dN_by_dx_atGaussPt<<"\n";
         int rows_dN_dx=dN_by_dx_atGaussPt.n_rows;
         int cols_dN_dx=dN_by_dx_atGaussPt.n_cols;
         sp_mat grad_u(vectorLvl*rows_dN_dx, vectorLvl*cols_dN_dx);
@@ -303,6 +305,40 @@ public:
         }
         return grad_u.t();
     }
+
+     sp_mat Get_Sym_grad_u(int ElementType, int ElementNumber, int GaussPntr)
+     {
+         mat dN_by_dx_atGaussPt=Get_dN_by_dx(ElementType, ElementNumber, GaussPntr);
+         int rows_dN_dx=dN_by_dx_atGaussPt.n_rows;
+         int cols_dN_dx=dN_by_dx_atGaussPt.n_cols;
+         int BottomMatSize[]={0,1,3};
+         sp_mat sym_grad_uTop(vectorLvl, vectorLvl*rows_dN_dx);
+         mat sym_grad_uBottom(BottomMatSize[vectorLvl-1],vectorLvl*rows_dN_dx);
+         umat fill_ch={{0,1},
+                       {1,2},
+                       {0,2}};
+         umat fillFrom_ch={{1,0},
+                           {2,1},
+                           {2,0}};
+         mat BottomTemp=zeros(1, vectorLvl);
+         for(int ShpFncNum=0; ShpFncNum<rows_dN_dx; ShpFncNum++)
+         {
+             mat dN_by_dx_atGaussPtRow=dN_by_dx_atGaussPt.row(ShpFncNum);
+             sym_grad_uTop.cols(ShpFncNum*vectorLvl,ShpFncNum*vectorLvl+vectorLvl-1)
+                     =sp_mat(diagmat(dN_by_dx_atGaussPtRow));
+             for (int BottomRow=0; BottomRow<BottomMatSize[vectorLvl-1]; BottomRow++)
+             {
+                 BottomTemp.cols(fill_ch.row(BottomRow))=
+                         dN_by_dx_atGaussPtRow.cols(fillFrom_ch.row(BottomRow));
+                 sym_grad_uBottom(BottomRow,span(ShpFncNum*vectorLvl,ShpFncNum*vectorLvl+vectorLvl-1))
+                         =BottomTemp;
+                 BottomTemp=zeros(1,vectorLvl);
+             }
+         }
+         return join_vert(sym_grad_uTop,
+                          sp_mat(sym_grad_uBottom));
+     }
+
     /// Returns the Transpose of Gradient of u for a particular gauss point of a particular
     /// element which is a particular ElementType
      sp_mat GetTranspose_grad_u(int ElementType, int ElementNumber, int GaussPntr)
@@ -481,7 +517,7 @@ protected:
     std::vector<mat> GaussPointy;
     std::vector<mat> GaussPointz;
     std::vector<std::vector<sp_mat>> u;
-    std::vector<std::vector<mat>> dN_by_dEps;
+    //std::vector<std::vector<mat>> dN_by_dEps;
     std::vector<LagrangeShapeFunction> Phi;
     std::vector<mat> N;
     bool NewMeshInstanceCreated=false;
