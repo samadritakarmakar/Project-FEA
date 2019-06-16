@@ -73,6 +73,7 @@ int main()
     DrchltBC2.ApplyBC(A.Matrix[0][0],b.Vector[0]);
 
     mat(A.Matrix[0][0]).save("A", arma_ascii);
+    b.Vector[0].save("b", arma_ascii);
     mat X=spsolve(A.Matrix[0][0],b.Vector[0]);
     //cout<<X.t();
     GmshWriter Write(u, "ElmntVrfy.pos");

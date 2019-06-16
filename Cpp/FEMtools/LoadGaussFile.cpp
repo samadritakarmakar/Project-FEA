@@ -86,7 +86,8 @@ std::string FEMtools::LoadGaussFile(const libGmshReader::MeshReader &Mesh, const
 
 void FEMtools::TensorGauss(int &p, float &n, std::string &GaussFileName)
 {
-    n=(p+2.0)/(2.0);
+    //n=(p+2.0)/(2.0);
+    n=p+1;
     n=std::ceil(n);
     GaussFileName=GaussFileName+"Data/n"+std::to_string(int (n));
 }
