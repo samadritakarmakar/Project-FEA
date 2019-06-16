@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 {
     if(argc==1 || argc>3)
     {
-        std::cout<<"Usage: ./ProjectTestFunction <.msh Filename> <Dimension>\n";
+        std::cout<<"Usage: ./ElasticityEx <.msh Filename> <Dimension>\n";
         return 0;
     }
     std::string FileName(argv[1]);
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
     /// The Physical Group Index here does not depend on the Physical Group number of Gmsh
     /// but is rather an Index of where the group was defined 1st 2nd or 3rd (in here, 0, 1,or 2)
     TrialFunctionNeumannSurface u_surf(u,1);
-    /// Here the Galerkin Test Fucntion is set.
+    /// Here the Galerkin Test Function is set.
     TestFunctionGalerkin<TrialFunctionNeumannSurface> v_surf(u_surf);
     /// An Instance For calculating the Traction forces on the surface is defined here.
     TractionForceSurface lclintgtr3(a3,u_surf, v_surf);
@@ -156,8 +156,8 @@ int main(int argc, char *argv[])
     /// Here all the elements are integrated over and filled into the vector 'b'.
     systmAssmbly3.RunSystemAssemblyVector(lclintgtr3, b.Vector[0]);
 
-    Form<TrialFunctionNeumannLine> a4;
-    TrialFunctionNeumannLine u_line(u,0);
+    //Form<TrialFunctionNeumannLine> a4;
+    //TrialFunctionNeumannLine u_line(u,0);
     //TestFunctionGalerkin<TrialFunctionNeumannLine> v_line(u_line);
     //TractionForceLine lcl_intgrt4(a4,u_line,v_line);
     //SystemAssembler<TractionForceLine, TrialFunctionNeumannLine> systmAssmbly4(a4,u_line, v_line);

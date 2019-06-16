@@ -64,13 +64,6 @@ add_executable(OneElmntVrfy OneElmntVrfy.cpp ProjectFEA.hpp)
 target_link_libraries (OneElmntVrfy ${PreDev} ${PreInstalled} ${InternalDev} ${CMAKE_THREAD_LIBS_INIT}
    ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
 
-#add_executable(Poission ProjectFEA.hpp main.cpp)
-#target_link_libraries (Poission ${PROJECT_NAME})
-
-#add_executable(ElasticityEx ProjectFEA.hpp ElasticityExample.cpp)
-#target_link_libraries (ElasticityEx ${PreDev} ${PreInstalled} ${InternalDev} ${CMAKE_THREAD_LIBS_INIT}
-#    ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
-
 
 set (COPY_FILES BaseGeom GaussData OneElmntGeom SampleGmsh)
 foreach(loop_var ${COPY_FILES})
