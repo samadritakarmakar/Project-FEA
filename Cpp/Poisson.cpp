@@ -1,7 +1,9 @@
 #include <iostream>
 #include "ProjectFEA.hpp"
 
-using namespace arma;
+
+/// A new Model is defined here. This weak form is integrated over each element.
+/// The Virtual 'weak_form' function defined in 'LocalIntegrator' is overloaded during runtime.
 class new_LocalIntegrator: public LocalIntegrator<TrialFunction>
 {
 public:
@@ -15,6 +17,7 @@ public:
     }
 };
 
+/// The Virtual 'weak_form_vector' function defined in 'LocalIntegrator' is overloaded during runtime.
 class new_LocalIntegrator2: public LocalIntegrator<TrialFunction>
 {
 public:
@@ -30,6 +33,7 @@ public:
     }
 };
 
+/// The Virtual 'weak_form_vector' function defined in 'LocalIntegrator' is overloaded during runtime.
 class new_Neu_Surf_LclIntgrtr: public LocalIntegrator <TrialFunctionNeumannSurface>
 {
 public:
@@ -48,7 +52,7 @@ public:
 
 };
 
-
+/// The Virtual 'weak_form_vector' function defined in 'LocalIntegrator' is overloaded during runtime.
 class new_Neu_Line_LclIntgrtr: public LocalIntegrator<TrialFunctionNeumannLine>
 {
 public:
@@ -66,6 +70,8 @@ public:
     }
 };
 
+///This class over here through its overloaded virtual function declares the values of Dirichlet Nodes.
+/// The virtual function 'Eval' is evaluated at each node to find the value of Dirichlet Condtion at that node.
 class DeclaredExprssn : public Expression
 {
 public:
@@ -76,7 +82,7 @@ public:
     vec Eval(vec& x)
     {
         vec value={0,0,0};
-        return -value;
+        return value;
     }
 };
 
@@ -94,6 +100,7 @@ int main(int argc, char *argv[])
     libGmshReader::MeshReader Mesh(FileName, Dimension);
 
     int vectorLevel=3;
+    /// Declaration of Quantity to be Calculated.
     TrialFunction u(Mesh,vectorLevel);
     TestFunctionGalerkin<TrialFunction> v(u);
     Form<TrialFunction> a;
@@ -132,12 +139,12 @@ int main(int argc, char *argv[])
     umat boolDiricletNodes={1,1,1};
     DirichletBC DrchltBC(u_surf,1, boolDiricletNodes);
     DeclaredExprssn Dirich(vectorLevel);
-    DrchltBC.SetDirichletBC(Dirich);
+    DrchltBC.SetDirichletBCExpression(Dirich);
     DrchltBC.ApplyBC(A.Matrix[0][0],b.Vector[0]);
     //cout<<b.Vector[0];
     mat X=spsolve(A.Matrix[0][0],b.Vector[0]);
     //cout<<X;
-    GmshWriter Write(u, "output.pos");
+    GmshWriter Write(u, "poisson.pos");
     Write.WriteToGmsh(X);
 
     cout<<"Done!!!\n";

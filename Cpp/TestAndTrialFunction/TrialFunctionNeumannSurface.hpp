@@ -29,6 +29,7 @@ public:
             }
             NoOfElements[ElementType]= Msh->ElmntPhysclGrpNodes[ElementType][PhysclGrpNum].n_rows;
             ElmntNodes[ElementType]= Msh->ElmntPhysclGrpNodes[ElementType][PhysclGrpNum];
+            PhysicalGrpName=Msh->PhysicalGroupName[ElementType];
         }
     }
     /// This function generates the F matrix. This in mathematical terms is the Jacobian dx/dEps

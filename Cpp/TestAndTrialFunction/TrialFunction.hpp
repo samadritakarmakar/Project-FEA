@@ -28,6 +28,7 @@ public:
     int vectorLvl;
     int originalVctrLvl;
     int NoOfElementTypes;
+    std::string PhysicalGrpName;
 
     /// To be used only for declaring, must not forget to Initialize.
     TrialFunction()
@@ -179,6 +180,7 @@ public:
         {
             NoOfElements[ElementType]= Msh->ElementNodes[ElementType].n_rows;
             ElmntNodes[ElementType]= Msh->ElementNodes[ElementType];
+            PhysicalGrpName="Whole Domain";
         }
     }
 

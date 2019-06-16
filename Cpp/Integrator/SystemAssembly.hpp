@@ -39,7 +39,7 @@ public:
         A_Internal=&A;
         A_Internal->resize
                 (v_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows,u_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows);
-        //cout<<"No of Rows of NodeTags= "<<u_Internal.Msh->NodalCoordinates;
+        cout<<"Size of A= "<<A.n_rows<<","<<A.n_cols<<"\n";
     }
 
     /// This set the vector size of the matrix b. It is determines from the size of Function v.
@@ -55,7 +55,7 @@ public:
     void RunSystemAssembly(GenericLocalIntegrator& Integrate, sp_mat& A)
     {
         SetLocalIntegrator(Integrate);
-        cout<<"Size of A= "<<A.n_rows<<","<<A.n_cols<<"\n";
+        cout<<"Integrating over "<<u_Internal.PhysicalGrpName<<"\n";
         //Configuration for Batch addition of matrix to global matrix
         bool add_values=false;
         bool sort_locations=true;
@@ -97,9 +97,12 @@ public:
         }
     }
 
+    /// This is used for integrating to produce a vector. Generally used for source terms (body forces) and
+    /// neumann conditions (traction forces).
     void RunSystemAssemblyVector(GenericLocalIntegrator& Integrate, mat& b)
     {
         SetLocalIntegrator(Integrate);
+        cout<<"Integrating over "<<u_Internal.PhysicalGrpName<<"\n";
         NodePositions=std::vector<umat>(u_Internal.NoOfElementTypes);
         for (int ElmntTyp=0; ElmntTyp<u_Internal.NoOfElementTypes; ElmntTyp++)
         {
@@ -110,6 +113,8 @@ public:
             {
                 RunLocalIntegrationVector();
                 umat positions=NodePositions[ElmntTyp].row(a_Internal.ElementNumber);
+                //umat temp=vectorise(unique(u_Internal.ElmntNodes[ElmntTyp]));
+                //cout<<"Neumann Condition applied over "<<u_Internal.Msh->NodalCoordinates.rows(temp)<<"\n";
                 umat positions2={0};
                 b.submat(positions, positions2)=b.submat(positions, positions2)+a_Internal.ResultingVector;
                 a_Internal.NextElementNumber();

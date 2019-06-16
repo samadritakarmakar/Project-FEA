@@ -14,11 +14,12 @@ public:
         modelName=GetOnlyFileName();
     }
 
+    /// Used to switch to next View tag;
     void GoToNextViewTag()
     {
         currentViewTag++;
     }
-    void WriteToGmsh(mat &x, double time=0.0)
+    void WriteToGmsh(mat &x, int step=0, double time=0.0)
     {
         gmsh::initialize();
         gmsh::open(u_Internal.Msh->ElementData::fileName);
@@ -27,7 +28,7 @@ public:
         std::vector<std::size_t> Nodetags;
         std::vector<std::vector<double>> Nodedata;
         getNodeTagAndNodeData(x, Nodetags, Nodedata);
-        gmsh::view::addModelData(currentViewTag, 0, modelName, dataType, Nodetags, Nodedata, time);
+        gmsh::view::addModelData(currentViewTag, step, modelName, dataType, Nodetags, Nodedata, time);
         gmsh::view::write(currentViewTag, outputFileName);
     }
 private:

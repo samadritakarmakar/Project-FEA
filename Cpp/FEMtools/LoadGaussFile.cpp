@@ -11,6 +11,7 @@ std::string FEMtools::LoadGaussFile(const libGmshReader::MeshReader &Mesh, const
     std::cout<<"Loading Gauss File of Element Type: "<<ElementName<<"\n";
     int MeshType= Mesh.GmshElementType[ElementType];
     int p= Mesh.order[ElementType];
+    std::cout<<"Order of Elemnt is = "<<p<<"\n";
     float n;
 
     std::string GaussFileName="GaussData/";

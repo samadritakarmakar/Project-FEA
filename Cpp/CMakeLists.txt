@@ -50,17 +50,27 @@ set (PreDev libGmshReader GmshApi LagrangeShapeFunction ShapeFunction FEMtools P
 
 set (PreInstalled armadillo lapack openblas superlu)
 
-add_executable(${PROJECT_NAME} ProjectFEA.hpp main.cpp)
+add_library(${PROJECT_NAME} ProjectFEA.hpp)
 target_link_libraries (${PROJECT_NAME} ${PreDev} ${PreInstalled} ${InternalDev} ${CMAKE_THREAD_LIBS_INIT}
-    ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
+   ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
 
-add_executable(ElasticityEx ProjectFEA.hpp ElasticityExample.cpp)
-target_link_libraries (ElasticityEx ${PreDev} ${PreInstalled} ${InternalDev} ${CMAKE_THREAD_LIBS_INIT}
-    ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
+add_executable(ElasticityEx ElasticityExample.cpp)
+target_link_libraries (ElasticityEx ProjectFEA)
 
-add_executable(OneElmntVrfy ProjectFEA.hpp OneElmntVrfy.cpp)
+add_executable(Poisson Poisson.cpp)
+target_link_libraries (Poisson ProjectFEA)
+
+add_executable(OneElmntVrfy OneElmntVrfy.cpp ProjectFEA.hpp)
 target_link_libraries (OneElmntVrfy ${PreDev} ${PreInstalled} ${InternalDev} ${CMAKE_THREAD_LIBS_INIT}
-    ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
+   ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
+
+#add_executable(Poission ProjectFEA.hpp main.cpp)
+#target_link_libraries (Poission ${PROJECT_NAME})
+
+#add_executable(ElasticityEx ProjectFEA.hpp ElasticityExample.cpp)
+#target_link_libraries (ElasticityEx ${PreDev} ${PreInstalled} ${InternalDev} ${CMAKE_THREAD_LIBS_INIT}
+#    ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
+
 
 set (COPY_FILES BaseGeom GaussData OneElmntGeom SampleGmsh)
 foreach(loop_var ${COPY_FILES})
