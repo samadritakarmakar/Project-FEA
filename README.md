@@ -49,7 +49,7 @@ or
 
   
     
-<img src="Cpp/Pics/ElasticExTetOrdr3.png" alt="Hexahedral of Order 3">
+<img src="Cpp/Pics/ElasticExHexOrdr1.png" alt="Hexahedral of Order 3">
   
 In case of the Bar example, a case of cantilever beam is tested, where a force of 4kN is applied at the end of a (2000mm x 200mm x 60mm) bar with a fixed end at the other side. The force is applied on the surface (200mm x 60mm). Young's modulus is supposed 200 Gpa.  
 By using formula delta_L =Pl^3/(3EI) we get 14.8mm deflection.  
