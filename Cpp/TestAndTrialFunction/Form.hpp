@@ -20,13 +20,6 @@ public:
         ElementType=0;
         ElementNumber=0;
         GaussPntr=0;
-       /* u_down=std::vector<TrialFunction> (u.MeshDimension-1);
-        v_down=std::vector<TestFunctionGalerkin> (u.MeshDimension-1);
-        libGmshReader::MeshReader Mesh(u.Msh->ElementData::fileName,u.MeshDimension-1);
-        u_down[0]=TrialFunction(Mesh, u.vectorLvl-1);
-        v_down[0]=TestFunctionGalerkin(u_down[0]);
-
-        cout<<mat(inner(grad(v_down[0]),grad(u_down[0]))); */
     }
 
 
@@ -35,14 +28,6 @@ public:
         ElementType=0;
         ElementNumber=0;
         GaussPntr=0;
-
-       /* u_down=std::vector<TrialFunction> (u.MeshDimension-1);
-        v_down=std::vector<TestFunctionGalerkin> (u.MeshDimension-1);
-        libGmshReader::MeshReader Mesh(u.Msh->ElementData::fileName,u.MeshDimension-1);
-        u_down[0]=TrialFunction(Mesh, u.vectorLvl-1);
-        v_down[0]=TestFunctionGalerkin(u_down[0]);
-
-        cout<<mat(inner(grad(v_down[0]),grad(u_down[0]))); */
     }
 
 
