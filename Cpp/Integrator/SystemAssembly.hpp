@@ -70,23 +70,6 @@ public:
             {
                 RunLocalIntegration();
                 umat positions=NodePositions[ElmntTyp].row(a_Internal.ElementNumber);
-                /*umat locations(2,positions.n_cols*positions.n_cols);
-                int locationPtr=0;
-                for (int row=0;row<positions.n_cols;row++)
-                {
-                    for (int col=0;col<positions.n_cols;col++)
-                    {
-                        umat locations1;
-                        locations1<<positions(row)<<endr<<positions(col)<<endr;
-                        locations.col(locationPtr)=locations1;
-                        locationPtr++;
-                    }
-                }
-                vec values=vectorise(mat(a_Internal.ResultingMat.t()));
-                //cout<<"Size of locations ="<<locations.n_rows<<","<<locations.n_cols<<"\n";
-                //cout<<"Size of values ="<<values.n_rows<<","<<values.n_cols<<"\n";
-                sp_mat A_temp=sp_mat(add_values, locations, values, A.n_rows, A.n_cols, sort_locations, check_for_zeros);*/
-
                 sp_mat A_temp=BatchFill_Atemp(A, ElmntTyp, positions);
                 //cout<<"ElmntNmbr ="<<ElmntNmbr<<"\n"<<mat(a_Internal.ResultingMat)<<"\n";
                 A=A+A_temp;
@@ -113,7 +96,6 @@ public:
             {
                 RunLocalIntegrationVector();
                 umat positions=NodePositions[ElmntTyp].row(a_Internal.ElementNumber);
-                //umat temp=vectorise(unique(u_Internal.ElmntNodes[ElmntTyp]));
                 //cout<<"Neumann Condition applied over "<<u_Internal.Msh->NodalCoordinates.rows(temp)<<"\n";
                 umat positions2={0};
                 b.submat(positions, positions2)=b.submat(positions, positions2)+a_Internal.ResultingVector;
@@ -133,6 +115,8 @@ private:
     sp_mat* A_Internal;
     mat * b_Internal;
 
+    /// This function fill ups the A_temp or rather the local matrix for the element.
+    /// The current value of the local element is stored in the 'a_Internal.ResultingMat' matrix.
     inline sp_mat BatchFill_Atemp(sp_mat& A, int& ElmntTyp, const umat& positions)
     {
         //Configuration for Batch addition of matrix to global matrix

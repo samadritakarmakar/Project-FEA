@@ -44,6 +44,7 @@ std::string FEMtools::LoadGaussFile(const libGmshReader::MeshReader &Mesh, const
     //For Quadrilaterals
     else if (ElementName.compare("Quadrilateral")==0)
     {
+        p=p*2;
         FEMtools::TensorGauss(p, n, GaussFileName);
     }
     //For Tetrahedrals
@@ -65,6 +66,7 @@ std::string FEMtools::LoadGaussFile(const libGmshReader::MeshReader &Mesh, const
     //For Hexahedrals
     else if (ElementName.compare("Hexahedron")==0)
     {
+        p=p*3;
         FEMtools::TensorGauss(p, n, GaussFileName);
     }
     else if (ElementName.compare("Prism")==0)
@@ -86,8 +88,8 @@ std::string FEMtools::LoadGaussFile(const libGmshReader::MeshReader &Mesh, const
 
 void FEMtools::TensorGauss(int &p, float &n, std::string &GaussFileName)
 {
-    //n=(p+2.0)/(2.0);
-    n=p+1;
+    n=(p+2.0)/(2.0);
+    //n=p+1;
     n=std::ceil(n);
     GaussFileName=GaussFileName+"Data/n"+std::to_string(int (n));
 }
