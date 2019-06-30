@@ -15,7 +15,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 #set (PreInstalled armadillo lapack openblas superlu)
 
-add_library(${PROJECT_NAME} TrialFunction.hpp TestFunctionGalerkin.hpp Form.hpp
+add_library(${PROJECT_NAME} TrialFunction.hpp TestFunctionGalerkin.hpp Form.hpp FormMultiThread.hpp
     TrialFunctionNeumannSurface.hpp TrialFunctionNeumannLine.hpp)
     
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)

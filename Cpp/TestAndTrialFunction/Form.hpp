@@ -219,6 +219,12 @@ public:
         GaussPntr++;
     }
 
+     void SetElementStartTo(int ElementStart)
+     {
+         ElementNumber=ElementStart;
+     }
+
+
 protected:
     GenericTrialFunction *u_Internal;
     TestFunctionGalerkin<GenericTrialFunction> *v_Internal;

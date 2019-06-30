@@ -1,6 +1,7 @@
 #ifndef LOCALINTEGRATION_HPP
 #define LOCALINTEGRATION_HPP
 #include "Form.hpp"
+#include "FormMultiThread.hpp"
 #include "TrialFunction.hpp"
 #include "TrialFunctionNeumannSurface.hpp"
 #include "TrialFunctionNeumannLine.hpp"
@@ -9,10 +10,25 @@ template <class GenericTrialFunction>
 class LocalIntegrator
 {
 public:
-    LocalIntegrator(Form<GenericTrialFunction>& a, GenericTrialFunction& u, TestFunctionGalerkin<GenericTrialFunction>& v):
-        a(a), u(u),v(v)
+    LocalIntegrator(Form<GenericTrialFunction>& a, GenericTrialFunction& u,
+                    TestFunctionGalerkin<GenericTrialFunction>& v):
+        u(u),v(v)
     {
+        _a.SetNumOfThreads(1);
+        _a.form[0]=a;
+        ResultingMat=std::vector<sp_mat>(1);
+        ResultingVector=std::vector<mat>(1);
+        usingFormMultiThread = false;
+    }
 
+    LocalIntegrator(FormMultiThread<GenericTrialFunction>& a, GenericTrialFunction& u,
+                    TestFunctionGalerkin<GenericTrialFunction>& v):
+        _a(a),u(u),v(v)
+    {
+        numOfThreads= _a.GetNumOfThreads();
+        ResultingMat=std::vector<sp_mat>(numOfThreads);
+        ResultingVector=std::vector<mat>(numOfThreads);
+        usingFormMultiThread = true;
     }
 
     virtual ~LocalIntegrator()
@@ -20,68 +36,155 @@ public:
         //----Do-Nothing
     }
 
-    virtual sp_mat weak_form(Form<GenericTrialFunction>& a, GenericTrialFunction& u, TestFunctionGalerkin<GenericTrialFunction>& v);
+    virtual sp_mat weak_form(Form<GenericTrialFunction>& a, GenericTrialFunction& u,
+                             TestFunctionGalerkin<GenericTrialFunction>& v)
+    {
+        cout<<"Warining!!! Internal default virtual function for matrix in a single thread is running\n";
+        return a.inner(a.grad(v),a.grad(u))*a.dX(u);
+    }
+
+    virtual sp_mat weak_form(FormMultiThread<GenericTrialFunction>& a, GenericTrialFunction& u,
+                     TestFunctionGalerkin<GenericTrialFunction>& v, int thread)
+    {
+        cout<<"Warining!!! Internal default virtual function for matrix in multi thread is running\n";
+        return a[thread].inner(a[thread].grad(v),a[thread].grad(u))*a[thread].dX(u);
+    }
 
     virtual mat weak_form_vector(Form<GenericTrialFunction>& a, GenericTrialFunction& u,
-                                 TestFunctionGalerkin<GenericTrialFunction>& v);
+                                 TestFunctionGalerkin<GenericTrialFunction>& v)
+    {
+        vec b;
+        cout<<"Warining!!! Internal default virtual function for vector in a single thread is running\n";
+        b<<0<<endr<<0<<endr<<-9.81<<endr;
+        return a.dot(v,b)*a.dX(u);
+    }
+
+    virtual mat weak_form_vector(FormMultiThread<GenericTrialFunction>& a, GenericTrialFunction& u,
+                                 TestFunctionGalerkin<GenericTrialFunction>& v, int thread)
+    {
+        vec b;
+        b<<0<<endr<<0<<endr<<-9.81<<endr;
+        cout<<"Warining!!! Internal default virtual function for matrix in multi thread is running\n";
+        return a[thread].dot(v,b)*a[thread].dX(u);
+    }
 
 
     void local_intergrator()
     {
-        a.set_u_Internal(u);
-        a.set_v_Internal(v);
-        //cout<<"Element Type ="<<a.ElementType<<"Gauss pt is at "<<a.GaussPntr<<"\n";
-        a=weak_form(a,u,v);
+        _a[0].set_u_Internal(u);
+        _a[0].set_v_Internal(v);
+        //cout<<"Element Number ="<<_a[0].ElementNumber<<" Gauss pt is at "<<_a[0].GaussPntr<<"\n";
+        ResultingMat[0]=weak_form(_a[0],u,v);
         //cout<<mat(a.ResultingMat)<<"\n";
-        int NoOfGaussPnts=u.GetNumberOfGaussPoints(a.ElementType);
+        int NoOfGaussPnts=u.GetNumberOfGaussPoints(_a[0].ElementType);
+        //cout<<"No of GaussPnts = "<<NoOfGaussPnts<<"\n";
         for (int i=0; i<NoOfGaussPnts-1; i++)
         {
-            a.NextGaussPntr();
-            //cout<<"Element Type ="<<a.ElementType<<"Gauss pt is at "<<a.GaussPntr<<"i= "<<i<<"\n";
-            a=a.ResultingMat+weak_form(a,u,v);
-            //cout<<mat(a.ResultingMat)<<"\n";
+            _a[0].NextGaussPntr();
+            //cout<<"Element Number ="<<_a[0].ElementNumber<<"Gauss pt is at "<<_a[0].GaussPntr<<" i= "<<i<<"\n";
+            ResultingMat[0]=ResultingMat[0]+weak_form(_a[0],u,v);
+            //if(_a[0].GaussPntr==215)
+                //cout<<"Resulting Mat size = "<<_a[0].ResultingMat.n_rows<<", "<<_a[0].ResultingMat.n_cols<<"\n";
         }
-        a.GaussPntr=0;
+        _a[0].GaussPntr=0;
+    }
+
+    void local_intergrator(int thread)
+    {
+        _a[thread].set_u_Internal(u);
+        _a[thread].set_v_Internal(v);
+        //cout<<"Element Number ="<<_a[0].ElementNumber<<" Gauss pt is at "<<_a[0].GaussPntr<<"\n";
+        ResultingMat[thread]=weak_form(_a,u,v, thread);
+        //cout<<mat(a.ResultingMat)<<"\n";
+        int NoOfGaussPnts=u.GetNumberOfGaussPoints(_a[thread].ElementType);
+        //cout<<"No of GaussPnts = "<<NoOfGaussPnts<<"\n";
+        for (int i=0; i<NoOfGaussPnts-1; i++)
+        {
+            _a[thread].NextGaussPntr();
+            //cout<<"Element Number ="<<_a[0].ElementNumber<<"Gauss pt is at "<<_a[0].GaussPntr<<" i= "<<i<<"\n";
+            ResultingMat[thread]=ResultingMat[thread]+weak_form(_a,u,v, thread);
+            //if(_a[0].GaussPntr==215)
+                //cout<<"Resulting Mat size = "<<_a[0].ResultingMat.n_rows<<", "<<_a[0].ResultingMat.n_cols<<"\n";
+        }
+        _a[thread].GaussPntr=0;
     }
 
     void local_intergrator_vector()
     {
-        a.set_u_Internal(u);
-        a.set_v_Internal(v);
+        _a[0].set_u_Internal(u);
+        _a[0].set_v_Internal(v);
         //cout<<"Element Type ="<<a.ElementType<<"Gauss pt is at "<<a.GaussPntr<<"\n";
-        a=weak_form_vector(a,u,v);
-        int NoOfGaussPnts=u.GetNumberOfGaussPoints(a.ElementType);
+        ResultingVector[0]=weak_form_vector(_a[0],u,v);
+        int NoOfGaussPnts=u.GetNumberOfGaussPoints(_a[0].ElementType);
         for (int i=0; i<NoOfGaussPnts-1; i++)
         {
-            a.NextGaussPntr();
+            _a[0].NextGaussPntr();
             //cout<<"Element Type ="<<a.ElementType<<"Gauss pt is at "<<a.GaussPntr<<"i= "<<i<<"\n";
-            a=a.ResultingVector+weak_form_vector(a,u,v);
+            ResultingVector[0]=ResultingVector[0]+weak_form_vector(_a[0],u,v);
         }
-        a.GaussPntr=0;
+        _a[0].GaussPntr=0;
+    }
+
+    void local_intergrator_vector(int thread)
+    {
+        _a[thread].set_u_Internal(u);
+        _a[thread].set_v_Internal(v);
+        //cout<<"Element Type ="<<a.ElementType<<"Gauss pt is at "<<a.GaussPntr<<"\n";
+        ResultingVector[thread]=weak_form_vector(_a,u,v, thread);
+        int NoOfGaussPnts=u.GetNumberOfGaussPoints(_a[thread].ElementType);
+        for (int i=0; i<NoOfGaussPnts-1; i++)
+        {
+            _a[thread].NextGaussPntr();
+            //cout<<"Element Type ="<<a.ElementType<<"Gauss pt is at "<<a.GaussPntr<<"i= "<<i<<"\n";
+            ResultingVector[thread]=ResultingVector[thread]+weak_form_vector(_a,u,v, thread);
+        }
+        _a[thread].GaussPntr=0;
     }
 
 
-    Form<GenericTrialFunction>& a;
+    sp_mat GetResultingMat(int thread=0)
+    {
+        return ResultingMat[thread];
+    }
+
+    mat GetResultingVector(int thread=0)
+    {
+        return ResultingVector[thread];
+    }
+
+    int GetElementNumber(int thread=0)
+    {
+        return _a[thread].ElementNumber;
+    }
+
+    void GoToNextElement(int thread=0)
+    {
+        _a[thread].NextElementNumber();
+    }
+
+    void GoToNextElementType(int thread=0)
+    {
+        _a[thread].NextElementType();
+    }
+
+    bool IsUsingFormMultiThread()
+    {
+        return usingFormMultiThread;
+    }
+
+    void SetElementStartTo(int thread, int ElementStart)
+    {
+        _a[thread].SetElementStartTo(ElementStart);
+    }
+
+private:
+    //Form<GenericTrialFunction>& a;
+    FormMultiThread<GenericTrialFunction> _a;
     GenericTrialFunction& u;
     TestFunctionGalerkin<GenericTrialFunction>& v;
-
+    std::vector<sp_mat> ResultingMat;
+    std::vector<mat> ResultingVector;
+    int numOfThreads;
+    bool usingFormMultiThread;
 };
-
-template <class GenericTrialFunction>
-sp_mat LocalIntegrator<GenericTrialFunction>::weak_form(Form<GenericTrialFunction>& a,
-                                                        GenericTrialFunction& u, TestFunctionGalerkin<GenericTrialFunction>& v)
-{
-    return a.inner(a.grad(v),a.grad(u))*a.dX(u);
-}
-
-template <class GenericTrialFunction>
-mat LocalIntegrator<GenericTrialFunction>::weak_form_vector(Form<GenericTrialFunction>& a, GenericTrialFunction& u,
-                             TestFunctionGalerkin<GenericTrialFunction>& v)
-{
-    vec b;
-    b<<0<<endr<<0<<endr<<-9.81<<endr;
-    return a.dot(v,b)*a.dX(u);
-}
-
-
 #endif // LOCALINTEGRATION_HPP

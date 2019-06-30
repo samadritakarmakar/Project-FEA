@@ -29,7 +29,7 @@ public:
             }
             NoOfElements[ElementType]= Msh->ElmntPhysclGrpNodes[ElementType][PhysclGrpNum].n_rows;
             ElmntNodes[ElementType]= Msh->ElmntPhysclGrpNodes[ElementType][PhysclGrpNum];
-            PhysicalGrpName=Msh->PhysicalGroupName[ElementType];
+            PhysicalGrpName=Msh->PhysicalGroupName[PhysclGrpNum];
         }
     }
 

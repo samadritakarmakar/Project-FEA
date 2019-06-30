@@ -7,16 +7,17 @@ using namespace arma;
 class LinearElastic: public LocalIntegrator<TrialFunction>
 {
 public:
-    LinearElastic(Form<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v):
+    LinearElastic(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v):
         LocalIntegrator (a,u,v)
     {
     }
-    sp_mat weak_form(Form<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v)
+    sp_mat weak_form(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v,
+                     int thread)
     {
         sp_mat C;
         double E=200.0e3;
         Set_C_3D(C,E);
-        return a.inner(a.sym_grad(v),C*a.sym_grad(u))*a.dX(u);
+        return a[thread].inner(a[thread].sym_grad(v),C*a[thread].sym_grad(u))*a[thread].dX(u);
     }
 };
 
@@ -114,7 +115,8 @@ int main(int argc, char *argv[])
     TestFunctionGalerkin<TrialFunction> v(u);
     /// Form is an interface Trial Function Declarations
     /// and the SystemAssembly.
-    Form<TrialFunction> a;
+    //Form<TrialFunction> a;
+    FormMultiThread<TrialFunction> a;
     /// Here an instance of the local intergrator is being declared.
     /// This is used to integrate over each element
     LinearElastic lcl_intgrt(a,u,v);

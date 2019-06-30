@@ -5,6 +5,7 @@
 #include "TrialFunction.hpp"
 #include "TestFunctionGalerkin.hpp"
 #include "Form.hpp"
+#include "FormMultiThread.hpp"
 #include "TrialFunctionNeumannSurface.hpp"
 #include "TrialFunctionNeumannLine.hpp"
 #include "LocalIntegration.hpp"

@@ -107,7 +107,6 @@ public:
                  {
                      A.row(Positions1(0,MatPosition))=zeros(1,A.n_cols);
                      A.col(Positions1(0,MatPosition))=zeros(A.n_rows,1);
-                     mat B;
                  }
              }
              locations_1s.set_size(2, uniquePositions.n_cols);
