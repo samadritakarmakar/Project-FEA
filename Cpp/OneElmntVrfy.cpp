@@ -10,7 +10,7 @@ public:
     {
     }
     sp_mat weak_form(Form<TrialFunction>& a, TrialFunction& u,
-                     TestFunctionGalerkin<TrialFunction>& v, int thread)
+                     TestFunctionGalerkin<TrialFunction>& v)
     {
         //cout<<mat(a[thread].inner(a[thread].sym_grad(v),C_Internal*a[thread].sym_grad(u))*a[thread].dX(u))<<"\n";
         //cout<<mat(a.inner(a.sym_grad(v),C_Internal*a.sym_grad(u))*a.dX(u));

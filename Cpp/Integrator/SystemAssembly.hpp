@@ -113,7 +113,8 @@ public:
             else
             {
                 Atemp=std::vector<sp_mat>(1);
-                IntegrateElement4Matrix(A, Atemp, ElmntTyp);
+                IntegrateElement4Matrix(A, Atemp[0], ElmntTyp);
+                A=A+Atemp[0];
             }
 
         }
@@ -139,16 +140,16 @@ public:
         integrate->GoToNextElementType(thread);
     }
 
-    void IntegrateElement4Matrix(sp_mat& A, std::vector<sp_mat>& Atemp, int ElmntTyp)
+    void IntegrateElement4Matrix(sp_mat& A, sp_mat& Atemp, int ElmntTyp)
     {
-        Atemp[0].set_size(A.n_rows, A.n_cols);
+        Atemp.set_size(A.n_rows, A.n_cols);
         for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp] ; ElmntNmbr++)
         {
             RunLocalIntegration();
             umat positions=NodePositions[ElmntTyp].row(integrate->GetElementNumber());
             //cout<<"ElmntNmbr ="<<ElmntNmbr<<"\n";
             sp_mat A_temp2=BatchFill_Atemp(A, ElmntTyp, positions);
-            Atemp[0]=Atemp[0]+A_temp2;
+            Atemp=Atemp+A_temp2;
             //a_Internal.NextElementNumber();
             integrate->GoToNextElement();
         }
@@ -168,43 +169,78 @@ public:
             GetNodePostions(NodePositions[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], u_Internal.originalVctrLvl);
             //cout<<"u_Internal.ElmntNodes[ElmntTyp] "<<u_Internal.ElmntNodes[ElmntTyp];
             //cout<<"NodePositions[ElmntTyp] "<<NodePositions[ElmntTyp]<<"\n";
+            std::vector<mat> bTemp(numOfThreads);
+            int ElmntDivision=u_Internal.NoOfElements[ElmntTyp]/numOfThreads;
             if(integrate->IsUsingFormMultiThread())
             {
-                int thread=0;
-                for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp]; ElmntNmbr++)
+                bTemp=std::vector<mat>(numOfThreads);
+                std::thread Fill_A_Thread[numOfThreads];
+                for (int thread=0; thread<numOfThreads; thread++)
                 {
-                    RunLocalIntegrationVector(thread);
-                    umat positions=NodePositions[ElmntTyp].row(integrate->GetElementNumber(thread));
-                    //cout<<"Neumann Condition applied over "<<u_Internal.Msh->NodalCoordinates.rows(temp)<<"\n";
-                    umat positions2={0};
-                    b.submat(positions, positions2)=b.submat(positions, positions2)+integrate->GetResultingVector(thread);
-                    //a_Internal.NextElementNumber();
-                    integrate->GoToNextElement(thread);
+                    if(thread<numOfThreads-1)
+                    {
+                        Fill_A_Thread[thread]=std::thread(&SystemAssembler::IntegrateOverElements4Vector, this, std::ref(b),
+                                                          std::ref(bTemp[thread]), thread, ElmntTyp,
+                                                          ElmntDivision*thread, ElmntDivision*(thread+1));
+                    }
+                    else
+                    {
+                        Fill_A_Thread[thread]=std::thread(&SystemAssembler::IntegrateOverElements4Vector, this, std::ref(b),
+                                                          std::ref(bTemp[thread]), thread, ElmntTyp,
+                                                          ElmntDivision*thread, u_Internal.NoOfElements[ElmntTyp]);
+                    }
                 }
-                //a_Internal.NextElementType();
-                integrate->GoToNextElementType(thread);
+                for (int thread=0; thread<numOfThreads; thread++)
+                {
+                    Fill_A_Thread[thread].join();
+                    b=b+bTemp[thread];
+                }
+
             }
             else
             {
-                for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp]; ElmntNmbr++)
-                {
-                    RunLocalIntegrationVector();
-                    umat positions=NodePositions[ElmntTyp].row(integrate->GetElementNumber());
-                    //cout<<"Neumann Condition applied over "<<u_Internal.Msh->NodalCoordinates.rows(temp)<<"\n";
-                    umat positions2={0};
-                    b.submat(positions, positions2)=b.submat(positions, positions2)+integrate->GetResultingVector();
-                    //a_Internal.NextElementNumber();
-                    integrate->GoToNextElement();
-                }
-                //a_Internal.NextElementType();
-                integrate->GoToNextElementType();
+                bTemp=std::vector<mat>(1);
+                IntegrateElements4Vector(b, bTemp[0], ElmntTyp);
+                b=b+bTemp[0];
             }
         }
     }
 
-    void IntegrateOverElements4Vector(mat &b, mat &btemp, int threadNum, int ElmntTyp, int startElement, int StopElement)
+    void IntegrateOverElements4Vector(mat &b, mat &btemp, int thread, int ElmntTyp, int ElmntStart, int ElmntEnd)
     {
+        cout<<"Thread "<<thread<<" has been launched!!!\n";
+        integrate->SetElementStartTo(thread, ElmntStart);
+        btemp=zeros(b.n_rows, b.n_cols);
+        //int thread=0;
+        for (int ElmntNmbr=ElmntStart; ElmntNmbr<ElmntEnd; ElmntNmbr++)
+        {
+            RunLocalIntegrationVector(thread);
+            umat positions=NodePositions[ElmntTyp].row(integrate->GetElementNumber(thread));
+            //cout<<"Neumann Condition applied over "<<u_Internal.Msh->NodalCoordinates.rows(temp)<<"\n";
+            umat positions2={0};
+            btemp.submat(positions, positions2)=btemp.submat(positions, positions2)+integrate->GetResultingVector(thread);
+            //a_Internal.NextElementNumber();
+            integrate->GoToNextElement(thread);
+        }
+        //a_Internal.NextElementType();
+        integrate->GoToNextElementType(thread);
+    }
 
+    void IntegrateElements4Vector(mat &b, mat &btemp, int ElmntTyp)
+    {
+        btemp=zeros(b.n_rows, b.n_cols);
+        for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp]; ElmntNmbr++)
+        {
+            RunLocalIntegrationVector();
+            umat positions=NodePositions[ElmntTyp].row(integrate->GetElementNumber());
+            //cout<<"Neumann Condition applied over "<<u_Internal.Msh->NodalCoordinates.rows(temp)<<"\n";
+            umat positions2={0};
+            btemp.submat(positions, positions2)=btemp.submat(positions, positions2)+integrate->GetResultingVector();
+            //a_Internal.NextElementNumber();
+            integrate->GoToNextElement();
+        }
+        //a_Internal.NextElementType();
+        integrate->GoToNextElementType();
     }
 
 private:

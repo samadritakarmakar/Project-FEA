@@ -26,15 +26,15 @@ public:
 class BodyForce: public LocalIntegrator<TrialFunction>
 {
 public:
-    BodyForce(Form<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v):
+    BodyForce(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v):
         LocalIntegrator (a,u,v)
     {
     }
-    mat weak_form_vector(Form<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v)
+    mat weak_form_vector(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v, int thread)
     {
         vec b;
         b<<0<<endr<<0<<endr<<0<<endr;
-        return a.dot(v,b)*a.dX(u);
+        return a[thread].dot(v,b)*a[thread].dX(u);
     }
 };
 
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
     systmAssmbly.RunSystemAssembly(lcl_intgrt, A.Matrix[0][0]);
 
 
-    Form<TrialFunction> a2;
+    FormMultiThread<TrialFunction> a2;
     BodyForce lcl_intgrt2(a2,u,v);
     SystemAssembler<BodyForce, TrialFunction> systmAssmbly2(a2,u,v);
     //mat b;
