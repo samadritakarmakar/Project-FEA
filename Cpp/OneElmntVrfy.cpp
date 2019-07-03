@@ -108,7 +108,7 @@ int main()
     SystemAssembler<LinearElastic, TrialFunction> systmAssmly(a,u,v);
     systmAssmly.SetMatrixSize(A.Matrix[0][0]);
     systmAssmly.RunSystemAssembly(intgrt,A.Matrix[0][0]);
-    cout<<mat(A.Matrix[0][0]);
+    //cout<<mat(A.Matrix[0][0]);
 
     vec body_force;
     body_force={0,0,0};

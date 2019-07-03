@@ -108,16 +108,13 @@ public:
                  vec Expressn= ExprssnInternal->Eval(X);
                  b.rows(Positions1)=Expressn.rows(ExprssnPositions[ElementType]);
                  //cout<<"DirchletBC Applied at, "<<Msh->NodalCoordinates.row(Positions1(0,0)/vctrLvlInternal)<<"\n";
-                 /*sp_mat Azero=speye(A.n_rows, A.n_cols);
+                 /*
                  for (int MatPosition=0;MatPosition<Positions1.n_cols;MatPosition++)
                  {
-                     //A.row(Positions1(0,MatPosition))=zeros(1,A.n_cols);
-                     //A.col(Positions1(0,MatPosition))=zeros(A.n_rows,1);
-                     Azero(Positions1(0,MatPosition),Positions1(0,MatPosition))=0.0;
-                     Azero=sp_mat(Azero);
+                     //A.row(Positions1(0,MatPosition)).zeros();
+                     //A.col(Positions1(0,MatPosition)).zeros();
                  }
-                 A=A*Azero;
-                 A=(A.t()*Azero).t();*/
+                 */
              }
              locations_1s.set_size(2, uniquePositions.n_cols);
              locations_1s=repmat(uniquePositions,2,1);

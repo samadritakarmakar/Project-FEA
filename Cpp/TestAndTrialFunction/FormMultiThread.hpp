@@ -32,7 +32,7 @@ public:
         form=std::vector<Form<GenericTrialFunction>>(numOfThreads);
     }
 
-    Form<GenericTrialFunction>& operator[](unsigned int ThreadNum)
+    Form<GenericTrialFunction>& operator[](int ThreadNum)
     {
         return form[ThreadNum];
     }

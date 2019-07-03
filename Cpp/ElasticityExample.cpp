@@ -43,18 +43,18 @@ public:
 class TractionForceSurface: public LocalIntegrator <TrialFunctionNeumannSurface>
 {
 public:
-    TractionForceSurface(Form<TrialFunctionNeumannSurface>& a, TrialFunctionNeumannSurface& u,
+    TractionForceSurface(FormMultiThread<TrialFunctionNeumannSurface>& a, TrialFunctionNeumannSurface& u,
                             TestFunctionGalerkin<TrialFunctionNeumannSurface>& v):
         LocalIntegrator (a,u,v)
     {
     }
 
-    mat weak_form_vector(Form<TrialFunctionNeumannSurface>& a, TrialFunctionNeumannSurface& u,
-                         TestFunctionGalerkin<TrialFunctionNeumannSurface>& v)
+    mat weak_form_vector(FormMultiThread<TrialFunctionNeumannSurface>& a, TrialFunctionNeumannSurface& u,
+                         TestFunctionGalerkin<TrialFunctionNeumannSurface>& v, int thread)
     {
         double Fz=-4.0e3/(200*60);
         vec vctr={0, 0, Fz};
-        return a.dot(v,vctr)*a.dS(u);
+        return a[thread].dot(v,vctr)*a[thread].dS(u);
     }
 
 };
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
     /// Here all the elements are integrated over and filled into the vector 'b'.
     systmAssmbly2.RunSystemAssemblyVector(lcl_intgrt2,b.Vector[0]);
 
-    Form<TrialFunctionNeumannSurface> a3;
+    FormMultiThread<TrialFunctionNeumannSurface> a3;
     /// Here a Traction force over the surface is being declared.
     /// The first argument specifies the function 'u' that is to be solved for.
     /// The second argument specifies the Index of the Physical Group defined in Gmsh.
