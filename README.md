@@ -55,6 +55,12 @@ In case of the Bar example, a case of cantilever beam is tested, where a force o
 By using formula delta_L =Pl^3/(3EI) we get 14.8mm deflection.  
 The finite element converges to that solution as the order of the elements and the number of nodes are increased.  
 
+## One Click Download and Compilation
+
+If you are using a Debian based Linux distribution, then you can try this one file download and compilation. This file downloads the requisite files, compiles them and even runs the OneElmntVrfy file to check that everything is running fine. You may download the file here....  
+
+ <a href="https://www.dropbox.com/s/asijl72b6l8q9s8/Setup.sh?dl=0">One Click Setup File</a> 
+
 ## How to Compile.
 Before starting, in your Linux installation, make sure you at least have the following packages installed.  
 (include the dev package for Ubuntu/ Debian based distributions)  
@@ -67,10 +73,10 @@ You can also clone it by,
 
     git clone https://gitlab.onelab.info/gmsh/gmsh.git
     
-The Branch currently used by ProjectFEA is gmsh_4_3_0.  
+The Branch currently used by ProjectFEA is gmsh_4_2_3.  
 You can set it by typing  
 
-    git checkout gmsh_4_3_0
+    git checkout gmsh_4_2_3
     
 Type the following in your Gmsh build directory. This will build a static library of Gmsh.  
 
