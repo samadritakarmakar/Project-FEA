@@ -57,7 +57,7 @@ The finite element converges to that solution as the order of the elements and t
 
 ## One Click Download and Compilation
 
-If you are using a Debian based Linux distribution, then you can try this one file download and compilation. This file downloads the requisite files, compiles them and even runs the OneElmntVrfy file to check that everything is running fine. You may download the file here....  
+If you are using a Debian based Linux distribution (Ubuntu, Mint, Debian, SparkyLinux etc..), then you can try this one file download and compilation. This file downloads the requisite files, compiles them and even runs the OneElmntVrfy file to check that everything is running fine. You may download the file here....  
 
  <a href="https://www.dropbox.com/s/asijl72b6l8q9s8/Setup.sh?dl=0">One Click Setup File</a> 
 
