@@ -59,8 +59,9 @@ public:
     void SetMatrixSize(sp_mat& A)
     {
         A_Internal=&A;
-        A_Internal->resize
-                (v_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows,u_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows);
+        //A_Internal->resize
+        A_Internal->set_size(v_Internal.vectorLvl*v_Internal.numOfNodes,u_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows);
+                //(v_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows,u_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows);
         cout<<"Size of A= "<<A.n_rows<<","<<A.n_cols<<"\n";
     }
 
@@ -68,8 +69,10 @@ public:
     void SetVectorSize(mat &b)
     {
         b_Internal=&b;
-        b_Internal->zeros(v_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows,1);
-        std::cout<<"Size of vector b= "<<v_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows<<", 1"<<"\n";
+        b_Internal->zeros(v_Internal.vectorLvl*v_Internal.numOfNodes, 1);
+        std::cout<<"Size of vector b= "<<b.n_rows<<","<<b.n_cols<<"\n";
+        //b_Internal->zeros(v_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows,1);
+        //std::cout<<"Size of vector b= "<<v_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows<<", 1"<<"\n";
     }
 
     /// This Function sets the weak form to be inegrated at the local level. It integrated over every element
@@ -78,10 +81,15 @@ public:
     {
         SetLocalIntegrator(Integrate);
         cout<<"Integrating over "<<u_Internal.PhysicalGrpName<<"\n";
-        NodePositions=std::vector<umat>(u_Internal.NoOfElementTypes);
+        NodePositions_u=std::vector<umat>(u_Internal.NoOfElementTypes);
+        NodePositions_v=std::vector<umat>(u_Internal.NoOfElementTypes);
         for (int ElmntTyp=0; ElmntTyp<u_Internal.NoOfElementTypes; ElmntTyp++)
         {
-            GetNodePostions(NodePositions[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], u_Internal.vectorLvl);
+                GetNodePostions(NodePositions_u[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], u_Internal.originalVctrLvl);
+                GetNodePostions(NodePositions_v[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], v_Internal.originalVctrLvl);
+                cout<<"v_Internal.originalVctrLvl ="<<v_Internal.originalVctrLvl<<"\n";
+                cout<<"u_Internal.ElmntNodes[ElmntTyp] =\n"<<u_Internal.ElmntNodes[ElmntTyp]<<"\n";
+                //cout<<"NodePositions_v[ElmntTyp] =\n"<<NodePositions_v[ElmntTyp]<<"\n";
             //u_Internal.Msh->ElementNodes[ElmntTyp].n_rows;
             std::vector<sp_mat> Atemp(numOfThreads);
             int ElmntDivision=u_Internal.NoOfElements[ElmntTyp]/numOfThreads;
@@ -129,13 +137,15 @@ public:
         for (int ElmntNmbr=ElmntStart; ElmntNmbr<ElmntEnd ; ElmntNmbr++)
         {
             RunLocalIntegration(thread);
-            umat positions=NodePositions[ElmntTyp].row(integrate->GetElementNumber(thread));
-           //cout<<"ElmntNmbr ="<<ElmntNmbr<<"\n";
-            sp_mat A_temp2=BatchFill_Atemp(A, ElmntTyp, positions, thread);
+            umat positions_u=NodePositions_u[ElmntTyp].row(integrate->GetElementNumber(thread));
+            umat positions_v=NodePositions_v[ElmntTyp].row(integrate->GetElementNumber(thread));
+            //cout<<"ElmntNmbr ="<<ElmntNmbr<<" ";
+            sp_mat A_temp2=BatchFill_Atemp(A, ElmntTyp, positions_u, positions_v, thread);
             Atemp=Atemp+A_temp2;
             //a_Internal.NextElementNumber();
             integrate->GoToNextElement(thread);
         }
+        cout<<"\n";
         //a_Internal.NextElementType();
         integrate->GoToNextElementType(thread);
     }
@@ -146,9 +156,10 @@ public:
         for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp] ; ElmntNmbr++)
         {
             RunLocalIntegration();
-            umat positions=NodePositions[ElmntTyp].row(integrate->GetElementNumber());
+            umat positions_u=NodePositions_u[ElmntTyp].row(integrate->GetElementNumber());
+            umat positions_v=NodePositions_v[ElmntTyp].row(integrate->GetElementNumber());
             //cout<<"ElmntNmbr ="<<ElmntNmbr<<"\n";
-            sp_mat A_temp2=BatchFill_Atemp(A, ElmntTyp, positions);
+            sp_mat A_temp2=BatchFill_Atemp(A, ElmntTyp, positions_u, positions_v);
             Atemp=Atemp+A_temp2;
             //a_Internal.NextElementNumber();
             integrate->GoToNextElement();
@@ -159,16 +170,18 @@ public:
 
     /// This is used for integrating to produce a vector. Generally used for source terms (body forces) and
     /// neumann conditions (traction forces).
-    void RunSystemAssemblyVector(GenericLocalIntegrator& Integrate, mat& b)
+    void RunSystemAssemblyVector(GenericLocalIntegrator& Integrate, mat& b, int vectorLevel=0)
     {
         SetLocalIntegrator(Integrate);
         cout<<"Integrating over "<<u_Internal.PhysicalGrpName<<"\n";
-        NodePositions=std::vector<umat>(u_Internal.NoOfElementTypes);
+        NodePositions_u=std::vector<umat>(u_Internal.NoOfElementTypes);
+        NodePositions_v=std::vector<umat>(u_Internal.NoOfElementTypes);
         for (int ElmntTyp=0; ElmntTyp<u_Internal.NoOfElementTypes; ElmntTyp++)
         {
-            GetNodePostions(NodePositions[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], u_Internal.originalVctrLvl);
+            GetNodePostions(NodePositions_u[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], u_Internal.originalVctrLvl);
+            GetNodePostions(NodePositions_v[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], v_Internal.originalVctrLvl);
             //cout<<"u_Internal.ElmntNodes[ElmntTyp] "<<u_Internal.ElmntNodes[ElmntTyp];
-            //cout<<"NodePositions[ElmntTyp] "<<NodePositions[ElmntTyp]<<"\n";
+            //cout<<"NodePositions_u[ElmntTyp] "<<NodePositions_u[ElmntTyp]<<"\n";
             std::vector<mat> bTemp(numOfThreads);
             int ElmntDivision=u_Internal.NoOfElements[ElmntTyp]/numOfThreads;
             if(integrate->IsUsingFormMultiThread())
@@ -215,10 +228,10 @@ public:
         for (int ElmntNmbr=ElmntStart; ElmntNmbr<ElmntEnd; ElmntNmbr++)
         {
             RunLocalIntegrationVector(thread);
-            umat positions=NodePositions[ElmntTyp].row(integrate->GetElementNumber(thread));
+            umat positions_v=NodePositions_v[ElmntTyp].row(integrate->GetElementNumber(thread));
             //cout<<"Neumann Condition applied over "<<u_Internal.Msh->NodalCoordinates.rows(temp)<<"\n";
             umat positions2={0};
-            btemp.submat(positions, positions2)=btemp.submat(positions, positions2)+integrate->GetResultingVector(thread);
+            btemp.submat(positions_v, positions2)=btemp.submat(positions_v, positions2)+integrate->GetResultingVector(thread);
             //a_Internal.NextElementNumber();
             integrate->GoToNextElement(thread);
         }
@@ -232,10 +245,10 @@ public:
         for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp]; ElmntNmbr++)
         {
             RunLocalIntegrationVector();
-            umat positions=NodePositions[ElmntTyp].row(integrate->GetElementNumber());
+            umat positions_v=NodePositions_v[ElmntTyp].row(integrate->GetElementNumber());
             //cout<<"Neumann Condition applied over "<<u_Internal.Msh->NodalCoordinates.rows(temp)<<"\n";
             umat positions2={0};
-            btemp.submat(positions, positions2)=btemp.submat(positions, positions2)+integrate->GetResultingVector();
+            btemp.submat(positions_v, positions2)=btemp.submat(positions_v, positions2)+integrate->GetResultingVector();
             //a_Internal.NextElementNumber();
             integrate->GoToNextElement();
         }
@@ -248,36 +261,38 @@ private:
     GenericTrialFunction& u_Internal;
     TestFunctionGalerkin<GenericTrialFunction>& v_Internal;
     LocalIntegrator<GenericTrialFunction>* integrate;
-    std::vector<umat> NodePositions;
+    std::vector<umat> NodePositions_u;
+    std::vector<umat> NodePositions_v;
     sp_mat* A_Internal;
     mat * b_Internal;
     int numOfThreads;
 
     /// This function fill ups the A_temp or rather the local matrix for the element.
     /// The current value of the local element is stored in the 'a_Internal.ResultingMat' matrix.
-    inline sp_mat BatchFill_Atemp(sp_mat& A, int& ElmntTyp, const umat& positions, int thread=0)
+    inline sp_mat BatchFill_Atemp(sp_mat& A, int& ElmntTyp, const umat& positions_u, const umat& positions_v, int thread=0)
     {
         //Configuration for Batch addition of matrix to global matrix
         bool add_values=false;
         bool sort_locations=true;
         bool check_for_zeros=true;
         //------------------------------------------------------------
-        umat locations(2,positions.n_cols*positions.n_cols);
+        umat locations(2,positions_v.n_cols*positions_u.n_cols);
+        cout<<"positions_v.n_cols = "<<positions_v.n_cols<<" positions_u.n_cols = "<<positions_u.n_cols<<"\n";
         int locationPtr=0;
-        for (int row=0;row<positions.n_cols;row++)
+        for (int col=0;col<positions_u.n_cols;col++)
         {
-            for (int col=0;col<positions.n_cols;col++)
+            for (int row=0;row<positions_v.n_cols;row++)
             {
                 umat locations1;
-                locations1<<positions(row)<<endr<<positions(col)<<endr;
+                locations1<<positions_v(row)<<endr<<positions_u(col)<<endr;
                 locations.col(locationPtr)=locations1;
                 locationPtr++;
             }
         }
         vec values=vectorise(mat(integrate->GetResultingMat(thread)));
         //cout<<mat(a_Internal.ResultingMat.t())<<"\n";
-        //cout<<"Size of locations ="<<locations.n_rows<<", "<<locations.n_cols<<"\n";
-        //cout<<"Size of values ="<<values.n_rows<<", "<<values.n_cols<<"\n";
+        cout<<"Size of locations ="<<locations.n_rows<<", "<<locations.n_cols<<"\n";
+        cout<<"Size of values ="<<values.n_rows<<", "<<values.n_cols<<"\n";
         sp_mat A_temp=sp_mat(add_values, locations, values, A.n_rows, A.n_cols, sort_locations, check_for_zeros);
         return A_temp;
     }

@@ -92,6 +92,10 @@ public:
         setDimension(dimension);
         std::chrono::time_point<std::chrono::system_clock> start, end;
         start = std::chrono::system_clock::now();
+        gmsh::initialize();
+        //std::ifstream fileExist(fileName);
+        gmsh::open(FileName);
+
         ///Extracts Node data from Mesh file
         GetNodeData();
         ///Extracts Element data from Mesh file
@@ -106,6 +110,7 @@ public:
         std::chrono::duration<double> elapsed_seconds = end-start;
         std::cout<<"Time taken to Read Mesh= "<<elapsed_seconds.count()<<" seconds\n";
         GetPhysicalGroupData();
+        gmsh::finalize();
     }
     /// This Copies the FileName, Node Data from the given File and skips reading Node Data
     MeshReader(libGmshReader::MeshReader GivenMsh, int dimension)
@@ -136,7 +141,46 @@ public:
         std::chrono::duration<double> elapsed_seconds = end-start;
         std::cout<<"Time taken to Read Mesh= "<<elapsed_seconds.count()<<" seconds\n";
         GetPhysicalGroupData();
+        gmsh::finalize();
     }
+
+    MeshReader(libGmshReader::MeshReader GivenMsh, int dimension, int SetOrderTo)
+    {
+        std::cout<<"Reading the Mesh...\n";
+        ///Sets fileName
+        setFileName(GivenMsh.NodeData::fileName);
+        ///sets dimension
+        setDimension(dimension);
+        std::chrono::time_point<std::chrono::system_clock> start, end;
+        start = std::chrono::system_clock::now();
+        gmsh::initialize();
+        gmsh::open(NodeData::fileName);
+        gmsh::model::mesh::setOrder(SetOrderTo);
+        std::string NewFileName=NodeData::fileName+std::to_string( SetOrderTo)+".msh";
+        std::string optionName="Mesh.SaveAll";
+        gmsh::option::setNumber(optionName, 1.0);
+        gmsh::write(NewFileName);
+        //gmsh::clear();
+        /*gmsh::open(NewFileName);
+        setFileName(NewFileName);
+        ///Extracts Node data from Mesh file
+        GetNodeData();
+        ///Extracts Element data from Mesh file
+        GetElementData();
+        /// Extract just the element name and remove the number of nodes from it.
+        GetGmshElementNameOnly();
+        ///Sets the variable ElementNodes Mesh file
+        setElementNodes();
+        FindMaxNodeNumber();
+        end=std::chrono::system_clock::now();
+        std::cout<<"Done Reading the Mesh!\n";
+        std::chrono::duration<double> elapsed_seconds = end-start;
+        std::cout<<"Time taken to Read Mesh= "<<elapsed_seconds.count()<<" seconds\n";
+        GetPhysicalGroupData();*/
+        gmsh::finalize();
+        MeshReader(NewFileName, dimension);
+    }
+
 
     ///Deallocates all allocated Element Data
     ~MeshReader()

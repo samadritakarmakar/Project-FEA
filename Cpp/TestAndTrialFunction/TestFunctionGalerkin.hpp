@@ -6,15 +6,25 @@ class TestFunctionGalerkin
 {
 public:
     int vectorLvl;
+    int originalVctrLvl;
+    int numOfNodes;
+    std::vector<int> numOfGaussPoints;
     TestFunctionGalerkin()
     {
         //---Do-Nothing
     }
     /// Must Initialize using this.
-    TestFunctionGalerkin(GenericTrialFunction& u1)
+    TestFunctionGalerkin(GenericTrialFunction& _u)
     {
-        u=&u1;
-        vectorLvl=u1.vectorLvl;
+        u=&_u;
+        vectorLvl=_u.vectorLvl;
+        originalVctrLvl=_u.originalVctrLvl;
+        numOfNodes=_u.Msh->NodeTag.n_rows;
+        numOfGaussPoints=std::vector<int>(_u.NoOfElementTypes);
+        for (int ElmntTyp=0; ElmntTyp<_u.NoOfElementTypes; ElmntTyp++)
+        {
+            numOfGaussPoints[ElmntTyp]=_u.GetNumberOfGaussPoints(ElmntTyp);
+        }
         //cout<<"v =\n"<<mat(Get_v(0,0))<<"\n";
         //cout<<"Grad_v\n"<<mat(Get_grad_v(0,0,0))<<"\n";
     }

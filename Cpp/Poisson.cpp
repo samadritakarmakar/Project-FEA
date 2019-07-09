@@ -146,6 +146,7 @@ int main(int argc, char *argv[])
     //cout<<X;
     GmshWriter Write(u, "poisson.pos");
     Write.WriteToGmsh(X);
+    //Write.WriteToGmsh(X,"Disp");
 
     cout<<"Done!!!\n";
     return 0;

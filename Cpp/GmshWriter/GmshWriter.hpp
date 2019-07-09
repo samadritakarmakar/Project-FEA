@@ -8,6 +8,7 @@ using namespace arma;
 class GmshWriter
 {
 public:
+    std::string viewName="Results";
     GmshWriter(TrialFunction& u, std::string OutputFileName):
         u_Internal(u), outputFileName(OutputFileName)
     {
@@ -23,13 +24,15 @@ public:
     {
         gmsh::initialize();
         gmsh::open(u_Internal.Msh->ElementData::fileName);
-        gmsh::view::add(modelName, currentViewTag);
+        //gmsh::view::add(modelName, currentViewTag);
+        gmsh::view::add(viewName, currentViewTag);
         std::string dataType="NodeData";
         std::vector<std::size_t> Nodetags;
         std::vector<std::vector<double>> Nodedata;
         getNodeTagAndNodeData(x, Nodetags, Nodedata);
         gmsh::view::addModelData(currentViewTag, step, modelName, dataType, Nodetags, Nodedata, time);
         gmsh::view::write(currentViewTag, outputFileName);
+        gmsh::finalize();
     }
 private:
     TrialFunction& u_Internal;
@@ -51,6 +54,7 @@ private:
         Nodetags= std::vector<std::size_t> (NodeTagPtr.n_rows);
         Nodedata= std::vector<std::vector<double>>  (NodeTagPtr.n_rows);
         int& u_originalVctrLvl=u_Internal.originalVctrLvl;
+        cout<<"Vector Level for write ="<<u_originalVctrLvl<<"\n";
         //cout<<"Unique Node Tags are"<<unique(NodeTagPtr);
         for (int tagcount=0; tagcount<NodeTagPtr.n_rows; tagcount++)
         {

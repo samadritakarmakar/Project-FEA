@@ -76,7 +76,7 @@ public:
         //cout<<"Element Number ="<<_a[0].ElementNumber<<" Gauss pt is at "<<_a[0].GaussPntr<<"\n";
         ResultingMat[0]=weak_form(_a[0],u,v);
         //cout<<mat(a.ResultingMat)<<"\n";
-        int NoOfGaussPnts=u.GetNumberOfGaussPoints(_a[0].ElementType);
+        int NoOfGaussPnts= GetNumOfGaussPoints(0);
         //cout<<"No of GaussPnts = "<<NoOfGaussPnts<<"\n";
         for (int i=0; i<NoOfGaussPnts-1; i++)
         {
@@ -96,7 +96,7 @@ public:
         //cout<<"Element Number ="<<_a[0].ElementNumber<<" Gauss pt is at "<<_a[0].GaussPntr<<"\n";
         ResultingMat[thread]=weak_form(_a,u,v, thread);
         //cout<<mat(a.ResultingMat)<<"\n";
-        int NoOfGaussPnts=u.GetNumberOfGaussPoints(_a[thread].ElementType);
+        int NoOfGaussPnts=GetNumOfGaussPoints(thread);
         //cout<<"No of GaussPnts = "<<NoOfGaussPnts<<"\n";
         for (int i=0; i<NoOfGaussPnts-1; i++)
         {
@@ -115,7 +115,7 @@ public:
         _a[0].set_v_Internal(v);
         //cout<<"Element Type ="<<a.ElementType<<"Gauss pt is at "<<a.GaussPntr<<"\n";
         ResultingVector[0]=weak_form_vector(_a[0],u,v);
-        int NoOfGaussPnts=u.GetNumberOfGaussPoints(_a[0].ElementType);
+        int NoOfGaussPnts=GetNumOfGaussPoints(0);
         for (int i=0; i<NoOfGaussPnts-1; i++)
         {
             _a[0].NextGaussPntr();
@@ -131,7 +131,7 @@ public:
         _a[thread].set_v_Internal(v);
         //cout<<"Element Type ="<<a.ElementType<<"Gauss pt is at "<<a.GaussPntr<<"\n";
         ResultingVector[thread]=weak_form_vector(_a,u,v, thread);
-        int NoOfGaussPnts=u.GetNumberOfGaussPoints(_a[thread].ElementType);
+        int NoOfGaussPnts=GetNumOfGaussPoints(thread);
         for (int i=0; i<NoOfGaussPnts-1; i++)
         {
             _a[thread].NextGaussPntr();
@@ -175,6 +175,15 @@ public:
     void SetElementStartTo(int thread, int ElementStart)
     {
         _a[thread].SetElementStartTo(ElementStart);
+    }
+
+    int GetNumOfGaussPoints(int thread=0)
+    {
+        int v_numOfGaussPoints=v.numOfGaussPoints[_a[thread].ElementType];
+        int u_numOfGaussPoints=u.GetNumberOfGaussPoints(_a[thread].ElementType);
+        int NumOfGaussPoints=std::min(v_numOfGaussPoints, u_numOfGaussPoints);
+        //cout<<"NumOfGaussPoints= "<<NumOfGaussPoints<<"\n";
+        return NumOfGaussPoints;
     }
 
 private:

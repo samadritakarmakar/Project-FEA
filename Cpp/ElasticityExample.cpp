@@ -78,6 +78,40 @@ public:
     }
 };
 
+class Stress : public LocalIntegrator<TrialFunction>
+{
+public:
+    Stress(FormMultiThread<TrialFunction>& a, TrialFunction& u,
+           TestFunctionGalerkin<TrialFunction>& v): LocalIntegrator (a, u, v){}
+
+    sp_mat weak_form(FormMultiThread<TrialFunction>& a, TrialFunction& u,
+                     TestFunctionGalerkin<TrialFunction>& v, int thread)
+    {
+        return a[thread].v(v)*a[thread].u(u)*a[thread].dX(u);
+    }
+};
+
+class StressMat : public LocalIntegrator<TrialFunction>
+{
+public:
+    StressMat(FormMultiThread<TrialFunction>& a, TrialFunction& u,
+           TestFunctionGalerkin<TrialFunction>& v, sp_mat& C):
+        LocalIntegrator (a,u,v), C_Internal(C)
+    {
+        inner_C_grad_u=std::vector<sp_mat>(a.GetNumOfThreads());
+    }
+
+    sp_mat weak_form(FormMultiThread<TrialFunction>& a, TrialFunction& u,
+                     TestFunctionGalerkin<TrialFunction>& v, int thread)
+    {
+        inner_C_grad_u[thread]=(C_Internal*a[thread].sym_grad(u));
+        return a[thread].dot(v,inner_C_grad_u[thread])*a[thread].dX(u);
+    }
+private:
+    sp_mat C_Internal;
+    std::vector<sp_mat> inner_C_grad_u;
+};
+
 ///This class over here through its overloaded virtual function declares the values of Dirichlet Nodes.
 /// The virtual function 'Eval' is evaluated at each node to find the value of Dirichlet Condtion at that node.
 class DeclaredExprssn : public Expression
@@ -181,7 +215,40 @@ int main(int argc, char *argv[])
     mat X=spsolve(A.Matrix[0][0],b.Vector[0]);
 
     GmshWriter Write(u, "ElasticEx.pos");
+    Write.viewName="Displacement";
     Write.WriteToGmsh(X);
+    //Write.WriteToGmsh(X, "Disp");
+
+    //Setting Mesh to order 1 for Post process analysis
+    int setOrderTo=1;
+    libGmshReader::MeshReader Mesh_order_1(Mesh, Dimension, setOrderTo);
+    vectorLevel=6;
+    TrialFunction stress(Mesh_order_1,vectorLevel);
+    FormMultiThread<TrialFunction> a_stress;
+    TestFunctionGalerkin<TrialFunction> v_Stress(stress);
+    Stress strss_obj(a_stress, stress, v_Stress);
+    SystemAssembler<Stress, TrialFunction> stress_Assmbly(a_stress, stress, v_Stress);
+    sp_mat Strss;
+    stress_Assmbly.SetMatrixSize(Strss);
+    stress_Assmbly.RunSystemAssembly(strss_obj, Strss);
+
+    double E=200.0e3;
+    sp_mat C;
+    Set_C_3D(C, E);
+    FormMultiThread<TrialFunction> a_strss_RHS_Mat;
+    StressMat strss_vctr(a_strss_RHS_Mat, u, v_Stress, C);
+    cout<<"v_Stress vectorLevel = "<<v_Stress.vectorLvl<<"\n";
+    SystemAssembler<StressMat, TrialFunction> stress_Vctr_Assmbly(a_strss_RHS_Mat, u, v_Stress);
+    sp_mat strssMat_RHS;
+    stress_Vctr_Assmbly.SetMatrixSize(strssMat_RHS);
+    stress_Vctr_Assmbly.RunSystemAssembly(strss_vctr, strssMat_RHS);
+    mat strssVec=strssMat_RHS*X;
+    mat Stress;
+    Stress=spsolve(Strss, strssVec);
+    GmshWriter WriteStrss(stress, "ElmntStrss.pos");
+    WriteStrss.viewName="Stress";
+    WriteStrss.WriteToGmsh(Stress);
+    //WriteStrss.WriteToGmsh(Stress, "Stress");
 
     cout<<"Done!!!\n";
     return 0;

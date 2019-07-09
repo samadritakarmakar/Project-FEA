@@ -132,7 +132,7 @@ public:
 
     void CheckVectorLevel()
     {
-        if (vectorLvl!=1 && vectorLvl!=MeshDimension)
+        if (vectorLvl!=1 && vectorLvl!=MeshDimension && vectorLvl<MeshDimension)
         {
             std::cout<<"Dimension ("<<MeshDimension<<") must match the Vector Level "<<vectorLvl<<"\n";
             std::cout<<"or Vector Level should be equal to 1!!!\n";

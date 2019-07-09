@@ -6,11 +6,11 @@
 
 void libGmshReader::NodeData::GetNodeData()
 {
-    gmsh::initialize();
+    //gmsh::initialize();
     //std::ifstream fileExist(fileName);
     if(fileExist)
     {
-        gmsh::open(fileName);
+        //gmsh::open(fileName);
         std::vector<std::size_t> nodeTags;
         std::vector<double> coord, parametricCoord;
         const int tag=-1;

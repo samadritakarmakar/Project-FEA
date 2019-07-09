@@ -60,9 +60,12 @@ target_link_libraries (ElasticityEx ProjectFEA)
 add_executable(Poisson Poisson.cpp)
 target_link_libraries (Poisson ProjectFEA)
 
-add_executable(OneElmntVrfy OneElmntVrfy.cpp ProjectFEA.hpp)
-target_link_libraries (OneElmntVrfy ${PreDev} ${PreInstalled} ${InternalDev} ${CMAKE_THREAD_LIBS_INIT}
-   ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
+#add_executable(OneElmntVrfy OneElmntVrfy.cpp ProjectFEA.hpp)
+#target_link_libraries (OneElmntVrfy ${PreDev} ${PreInstalled} ${InternalDev} ${CMAKE_THREAD_LIBS_INIT}
+#   ${CMAKE_SOURCE_DIR}/libGmshReader/GmshApi/libgmsh.a)
+
+add_executable(OneElmntVrfy OneElmntVrfy.cpp)
+target_link_libraries (OneElmntVrfy ProjectFEA)
 
 
 set (COPY_FILES BaseGeom GaussData OneElmntGeom SampleGmsh)
