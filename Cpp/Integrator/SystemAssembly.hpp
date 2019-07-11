@@ -86,9 +86,9 @@ public:
         for (int ElmntTyp=0; ElmntTyp<u_Internal.NoOfElementTypes; ElmntTyp++)
         {
                 GetNodePostions(NodePositions_u[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], u_Internal.originalVctrLvl);
-                GetNodePostions(NodePositions_v[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], v_Internal.originalVctrLvl);
-                cout<<"v_Internal.originalVctrLvl ="<<v_Internal.originalVctrLvl<<"\n";
-                cout<<"u_Internal.ElmntNodes[ElmntTyp] =\n"<<u_Internal.ElmntNodes[ElmntTyp]<<"\n";
+                GetNodePostions(NodePositions_v[ElmntTyp], v_Internal.ElmntNodes[ElmntTyp], v_Internal.originalVctrLvl);
+                //cout<<"v_Internal.originalVctrLvl ="<<v_Internal.originalVctrLvl<<"\n";
+                //cout<<"u_Internal.ElmntNodes[ElmntTyp] =\n"<<u_Internal.ElmntNodes[ElmntTyp]<<"\n";
                 //cout<<"NodePositions_v[ElmntTyp] =\n"<<NodePositions_v[ElmntTyp]<<"\n";
             //u_Internal.Msh->ElementNodes[ElmntTyp].n_rows;
             std::vector<sp_mat> Atemp(numOfThreads);
@@ -179,7 +179,7 @@ public:
         for (int ElmntTyp=0; ElmntTyp<u_Internal.NoOfElementTypes; ElmntTyp++)
         {
             GetNodePostions(NodePositions_u[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], u_Internal.originalVctrLvl);
-            GetNodePostions(NodePositions_v[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], v_Internal.originalVctrLvl);
+            GetNodePostions(NodePositions_v[ElmntTyp], v_Internal.ElmntNodes[ElmntTyp], v_Internal.originalVctrLvl);
             //cout<<"u_Internal.ElmntNodes[ElmntTyp] "<<u_Internal.ElmntNodes[ElmntTyp];
             //cout<<"NodePositions_u[ElmntTyp] "<<NodePositions_u[ElmntTyp]<<"\n";
             std::vector<mat> bTemp(numOfThreads);
@@ -277,7 +277,7 @@ private:
         bool check_for_zeros=true;
         //------------------------------------------------------------
         umat locations(2,positions_v.n_cols*positions_u.n_cols);
-        cout<<"positions_v.n_cols = "<<positions_v.n_cols<<" positions_u.n_cols = "<<positions_u.n_cols<<"\n";
+        //cout<<"positions_v.n_cols = "<<positions_v.n_cols<<" positions_u.n_cols = "<<positions_u.n_cols<<"\n";
         int locationPtr=0;
         for (int col=0;col<positions_u.n_cols;col++)
         {
@@ -291,8 +291,8 @@ private:
         }
         vec values=vectorise(mat(integrate->GetResultingMat(thread)));
         //cout<<mat(a_Internal.ResultingMat.t())<<"\n";
-        cout<<"Size of locations ="<<locations.n_rows<<", "<<locations.n_cols<<"\n";
-        cout<<"Size of values ="<<values.n_rows<<", "<<values.n_cols<<"\n";
+        //cout<<"Size of locations ="<<locations.n_rows<<", "<<locations.n_cols<<"\n";
+        //cout<<"Size of values ="<<values.n_rows<<", "<<values.n_cols<<"\n";
         sp_mat A_temp=sp_mat(add_values, locations, values, A.n_rows, A.n_cols, sort_locations, check_for_zeros);
         return A_temp;
     }

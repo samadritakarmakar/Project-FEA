@@ -292,4 +292,12 @@ void libGmshReader::MeshReader::GetPhysicalGroupData()
         }
     }*/
 }
+
+std::string libGmshReader::MeshReader::GetOnlyFileName(std::string fileName)
+{
+    std::string FileName=fileName;
+    int EndOfSlash=FileName.find_last_of("/");
+    int EndOfDot=FileName.find_last_of(".");
+    return FileName.substr(EndOfSlash+1, EndOfDot-EndOfSlash-1);
+}
 #endif

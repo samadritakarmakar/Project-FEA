@@ -9,6 +9,7 @@ public:
     int originalVctrLvl;
     int numOfNodes;
     std::vector<int> numOfGaussPoints;
+    std::vector<umat> ElmntNodes;
     TestFunctionGalerkin()
     {
         //---Do-Nothing
@@ -21,9 +22,12 @@ public:
         originalVctrLvl=_u.originalVctrLvl;
         numOfNodes=_u.Msh->NodeTag.n_rows;
         numOfGaussPoints=std::vector<int>(_u.NoOfElementTypes);
+        ElmntNodes=std::vector<umat>(_u.NoOfElementTypes);
         for (int ElmntTyp=0; ElmntTyp<_u.NoOfElementTypes; ElmntTyp++)
         {
             numOfGaussPoints[ElmntTyp]=_u.GetNumberOfGaussPoints(ElmntTyp);
+            ElmntNodes[ElmntTyp]=_u.ElmntNodes[ElmntTyp];
+
         }
         //cout<<"v =\n"<<mat(Get_v(0,0))<<"\n";
         //cout<<"Grad_v\n"<<mat(Get_grad_v(0,0,0))<<"\n";

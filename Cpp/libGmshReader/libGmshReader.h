@@ -156,12 +156,14 @@ public:
         gmsh::initialize();
         gmsh::open(NodeData::fileName);
         gmsh::model::mesh::setOrder(SetOrderTo);
-        std::string NewFileName=NodeData::fileName+std::to_string( SetOrderTo)+".msh";
+        std::string filenameTemp=GetOnlyFileName(NodeData::fileName);
+        //std::string NewFileName=NodeData::fileName+std::to_string( SetOrderTo)+".msh";
+        std::string NewFileName="/tmp/"+filenameTemp+std::to_string( SetOrderTo)+".msh";
         std::string optionName="Mesh.SaveAll";
         gmsh::option::setNumber(optionName, 1.0);
         gmsh::write(NewFileName);
-        //gmsh::clear();
-        /*gmsh::open(NewFileName);
+        gmsh::clear();
+        gmsh::open(NewFileName);
         setFileName(NewFileName);
         ///Extracts Node data from Mesh file
         GetNodeData();
@@ -176,9 +178,10 @@ public:
         std::cout<<"Done Reading the Mesh!\n";
         std::chrono::duration<double> elapsed_seconds = end-start;
         std::cout<<"Time taken to Read Mesh= "<<elapsed_seconds.count()<<" seconds\n";
-        GetPhysicalGroupData();*/
+        GetPhysicalGroupData();
         gmsh::finalize();
-        MeshReader(NewFileName, dimension);
+        //remove(NewFileName.c_str());
+        //MeshReader(NewFileName, dimension);
     }
 
 
@@ -210,6 +213,7 @@ private:
     void FillElementNodes(int start, int end, int ElementType, uvec &ContainsNodeTags);
     gmsh::vectorpair dimTags;
 
+    std::string GetOnlyFileName(std::string fileName);
 };
 }
 #endif // LIBGMSHREADER_H

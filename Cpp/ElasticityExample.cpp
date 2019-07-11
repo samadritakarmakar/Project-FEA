@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
     //Write.WriteToGmsh(X, "Disp");
 
     //Setting Mesh to order 1 for Post process analysis
-    int setOrderTo=1;
+    int setOrderTo=3;
     libGmshReader::MeshReader Mesh_order_1(Mesh, Dimension, setOrderTo);
     vectorLevel=6;
     TrialFunction stress(Mesh_order_1,vectorLevel);
@@ -245,10 +245,9 @@ int main(int argc, char *argv[])
     mat strssVec=strssMat_RHS*X;
     mat Stress;
     Stress=spsolve(Strss, strssVec);
-    GmshWriter WriteStrss(stress, "ElmntStrss.pos");
+    GmshWriter WriteStrss(stress, "ElstcStrss.pos");
     WriteStrss.viewName="Stress";
-    WriteStrss.WriteToGmsh(Stress);
-    //WriteStrss.WriteToGmsh(Stress, "Stress");
+    WriteStrss.WriteToGmshSymmetric_3x3(Stress);
 
     cout<<"Done!!!\n";
     return 0;
