@@ -31,4 +31,22 @@ public:
     std::vector<mat> Vector;
 };
 
+template<class GenericMatrix>
+class VariableGeneric
+{
+ public:
+    unsigned int nOfTerms;
+    VariableGeneric(int NoOfInpndntTerms)
+    {
+        Term = std::vector<GenericMatrix>(NoOfInpndntTerms);
+        nOfTerms=NoOfInpndntTerms;
+    }
+    std::vector<GenericMatrix> Term;
+
+    sp_mat operator[](int index)
+    {
+        return Term[index];
+    }
+};
+
 #endif // VARIABLE_HPP

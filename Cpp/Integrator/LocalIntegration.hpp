@@ -18,6 +18,7 @@ public:
         _a.form[0]=a;
         ResultingMat=std::vector<sp_mat>(1);
         ResultingVector=std::vector<mat>(1);
+        ResultingScalar=std::vector<double>(1);
         usingFormMultiThread = false;
     }
 
@@ -28,6 +29,7 @@ public:
         numOfThreads= _a.GetNumOfThreads();
         ResultingMat=std::vector<sp_mat>(numOfThreads);
         ResultingVector=std::vector<mat>(numOfThreads);
+        ResultingScalar=std::vector<double>(numOfThreads);
         usingFormMultiThread = true;
     }
 
@@ -66,6 +68,16 @@ public:
         b<<0<<endr<<0<<endr<<-9.81<<endr;
         cout<<"Warining!!! Internal default virtual function for matrix in multi thread is running\n";
         return a[thread].dot(v,b)*a[thread].dX(u);
+    }
+
+    virtual double scalar_integration(Form<GenericTrialFunction>& a, GenericTrialFunction& u)
+    {
+        return a.dX(u);
+    }
+
+    virtual double scalar_integration(FormMultiThread<GenericTrialFunction>& a, GenericTrialFunction& u, int thread)
+    {
+        return a[thread].dX(u);
     }
 
 
@@ -141,6 +153,38 @@ public:
         _a[thread].GaussPntr=0;
     }
 
+    void local_integration_scalar()
+    {
+        _a[0].set_u_Internal(u);
+        _a[0].set_v_Internal(v);
+        //cout<<"Element Type ="<<_a[0].ElementType<<"Gauss pt is at "<<_a[0].GaussPntr<<"\n";
+        ResultingScalar[0]=scalar_integration(_a[0],u);
+        int NoOfGaussPnts=GetNumOfGaussPoints(0);
+        for (int i=0; i<NoOfGaussPnts-1; i++)
+        {
+            _a[0].NextGaussPntr();
+            //cout<<"Element Type ="<<_a[0].ElementType<<"Gauss pt is at "<<_a[0].GaussPntr<<"\n";
+            ResultingScalar[0]=ResultingScalar[0]+scalar_integration(_a[0],u);
+        }
+        _a[0].GaussPntr=0;
+    }
+
+    void local_integration_scalar(int thread)
+    {
+        _a[thread].set_u_Internal(u);
+        _a[thread].set_v_Internal(v);
+        //cout<<"Element Type ="<<_a[thread].ElementType<<"Gauss pt is at "<<_a[thread].GaussPntr<<"\n";
+        ResultingScalar[thread]=scalar_integration(_a,u, thread);
+        int NoOfGaussPnts=GetNumOfGaussPoints(thread);
+        for (int i=0; i<NoOfGaussPnts-1; i++)
+        {
+            _a[thread].NextGaussPntr();
+            //cout<<"Element Type ="<<_a[thread].ElementType<<"Gauss pt is at "<<_a[thread].GaussPntr<<"i= "<<i<<"\n";
+            ResultingScalar[thread]=ResultingScalar[thread]+scalar_integration(_a,u, thread);
+        }
+        _a[thread].GaussPntr=0;
+    }
+
 
     sp_mat GetResultingMat(int thread=0)
     {
@@ -150,6 +194,11 @@ public:
     mat GetResultingVector(int thread=0)
     {
         return ResultingVector[thread];
+    }
+
+    double GetResultingScalar(int thread=0)
+    {
+        return ResultingScalar[thread];
     }
 
     int GetElementNumber(int thread=0)
@@ -193,6 +242,7 @@ private:
     TestFunctionGalerkin<GenericTrialFunction>& v;
     std::vector<sp_mat> ResultingMat;
     std::vector<mat> ResultingVector;
+    std::vector<double> ResultingScalar;
     int numOfThreads;
     bool usingFormMultiThread;
 };

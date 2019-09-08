@@ -5,10 +5,13 @@ using namespace arma;
 
 /// Stores x_h in variable 'vec x_h' and returns a matrix of the form
 /// [x+x_h, y, z; x, y+y_h, z; x, y, z+z_h]
-inline mat Get_xPlus_h(vec x, vec& x_h);
+inline mat Get_xPlus_h(vec x, vec& x_h, double rootOf=2.0, double multiplier=1.0);
 
-template <class classIntnc, class OtherData>
-mat Jacobian(classIntnc *Instnc, mat (classIntnc::*f)(mat , OtherData), mat x1, OtherData data);
+//template <class classIntnc, class OtherData>
+//mat Jacobian(classIntnc *Instnc, mat (classIntnc::*f)(mat , OtherData), mat x1, OtherData data);
+
+template<class OtherData>
+mat d2f_by_dx2(mat (*f)(mat , OtherData), mat x1, OtherData data);
 
 template<class OtherData>
 mat Jacobian(mat (*f)(mat , OtherData), mat x1, OtherData data) //pointer of the function; and the column of vectors
@@ -95,13 +98,41 @@ Mat1 JacobianMatrix(classIntnc *Instnc, Mat1 (classIntnc::*f)(mat , OtherData), 
     return df_dx;
 }
 
-inline mat Get_xPlus_h(vec x, vec& x_h)
+//template <class classIntnc, class OtherData>
+//mat d2f_by_dx2(classIntnc *Instnc, mat (classIntnc::*f)(mat , OtherData), mat x1, OtherData data) //pointer of the function; and the column of vectors
+template<class OtherData>
+mat d2f_by_dx2(mat (*f)(mat , OtherData), mat x1, OtherData data)
+{
+    vec x=vectorise(x1); //Ensures a column vector
+    vec x_h;
+    mat xPlus_h=Get_xPlus_h(x, x_h, 4.0);
+    mat xMinus_h=Get_xPlus_h(x, x_h, 4.0, -1.0);
+    //const vec fconst= vectorise((Instnc->*f)(x, data)); //values for f(x)
+    //vec fx1=vectorise((Instnc->*f)(xPlus_h.row(0), data))- 2*fconst+ vectorise((Instnc->*f)(xMinus_h.row(0), data)); //for the 1st row; (f(x+x_h) - f(x))
+    const vec fconst= vectorise((*f)(x, data)); //values for f(x)
+    vec fx1=vectorise((*f)(xPlus_h.row(0), data))- 2*fconst+ vectorise((*f)(xMinus_h.row(0), data));
+    vec x_h2=(x_h%x_h);
+    mat df2_dx2=zeros(fx1.n_rows, x.n_rows);
+    int i;
+    for (i=0; i<x.n_rows-1; i++)
+    {
+        df2_dx2.col(i)=fx1/(x_h2(i)); //(f(x+x_h)(i) - f(x))/x_h(i)
+        //fx1=vectorise((Instnc->*f)(xPlus_h.row(0), data))- 2*fconst+ vectorise((Instnc->*f)(xMinus_h.row(0), data));
+        fx1=vectorise((*f)(xPlus_h.row(i+1), data))- 2*fconst+ vectorise((*f)(xMinus_h.row(i+1), data));
+    }
+    df2_dx2.col(i)=fx1/(x_h2(i));
+    return df2_dx2;
+}
+
+inline mat Get_xPlus_h(vec x, vec& x_h, double rootOf, double multiplier)
 {
     //vec x=vectorise(x1); //Ensures a column vector
-    x_h=sqrt(eps(x))%x; //find x_h
+    //x_h=sqrt(eps(x))%x; //find x_h
+    x_h=multiplier*pow(eps(x),1.0/rootOf)%x;
     mat a;
     a<<1.0<<endr;
-    double eps1=sqrt(eps(a).at(0,0));
+    //double eps1=sqrt(eps(a).at(0,0));
+    double eps1=multiplier*pow(eps(a).at(0,0),1.0/rootOf);
     x_h.replace(0.0,eps1); //find elements where x_h=0 and replace them.
     //x_h.replace(0.0,.000000002); //fix if the above lines do not give good results.
     mat xPlus_h=kron(ones(x.n_rows,1),x.t())+diagmat(x_h); //Creates a matrix [x+x_h, y, z; x, y+y_h, z; x, y, z+z_h]

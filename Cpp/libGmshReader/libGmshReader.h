@@ -165,13 +165,13 @@ public:
         gmsh::clear();
         gmsh::open(NewFileName);
         setFileName(NewFileName);
-        ///Extracts Node data from Mesh file
+        //Extracts Node data from Mesh file
         GetNodeData();
-        ///Extracts Element data from Mesh file
+        //Extracts Element data from Mesh file
         GetElementData();
-        /// Extract just the element name and remove the number of nodes from it.
+        //Extract just the element name and remove the number of nodes from it.
         GetGmshElementNameOnly();
-        ///Sets the variable ElementNodes Mesh file
+        //Sets the variable ElementNodes Mesh file
         setElementNodes();
         FindMaxNodeNumber();
         end=std::chrono::system_clock::now();

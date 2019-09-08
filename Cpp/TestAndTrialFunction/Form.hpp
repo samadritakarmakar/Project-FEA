@@ -148,7 +148,7 @@ public:
         {
             //mat aMatrx=repmat(a.t(),grad_u.n_rows,1);
             //return sp_mat(aMatrx%grad_u);
-            mat aMatrx=a.rows(1,u_Internal->MeshDimension).t();
+            mat aMatrx=a.rows(0,u_Internal->MeshDimension-1).t();
             //cout<<grad_u;
             return sp_mat(aMatrx*grad_u);
         }
@@ -159,7 +159,8 @@ public:
             for (int i=0; i<vectorLvl; i++)
             {
                 //cout<<"col ="<<i*vectorLvl<<":"<<i*vectorLvl+vectorLvl-1;
-                vecMatrx.cols(i*vectorLvl,i*vectorLvl+vectorLvl-1)=sp_mat(diagmat(vctr.t()));
+                //vecMatrx.cols(i*vectorLvl,i*vectorLvl+vectorLvl-1)=sp_mat(diagmat(vctr.t()));
+                vecMatrx.cols(i*vectorLvl,i*vectorLvl+vectorLvl-1)=vctr(0,i)*speye(vectorLvl,vectorLvl);
             }
             return vecMatrx*grad_u;
         }

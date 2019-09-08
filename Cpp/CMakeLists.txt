@@ -13,7 +13,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
-
+include_directories("${PROJECT_SOURCE_DIR}/armadillo")
+add_subdirectory(armadillo/)
 include_directories ("${PROJECT_SOURCE_DIR}/libGmshReader/GmshApi/")
 add_subdirectory(libGmshReader/GmshApi/)
 include_directories ("${PROJECT_SOURCE_DIR}/libGmshReader/")
@@ -67,6 +68,8 @@ target_link_libraries (Poisson ProjectFEA)
 add_executable(OneElmntVrfy OneElmntVrfy.cpp)
 target_link_libraries (OneElmntVrfy ProjectFEA)
 
+add_executable(DiffusionEx DiffusionEx.cpp)
+target_link_libraries (DiffusionEx ProjectFEA)
 
 set (COPY_FILES BaseGeom GaussData OneElmntGeom SampleGmsh)
 foreach(loop_var ${COPY_FILES})

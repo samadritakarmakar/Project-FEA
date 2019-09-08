@@ -27,33 +27,6 @@ public:
         cout<<"Number of Threads to be Launched = "<<numOfThreads<<"\n";
     }
 
-    /// This function causes the weak form defined in the class of Integrate to be executed.
-    void SetLocalIntegrator(GenericLocalIntegrator& Integrate)
-    {
-        integrate=&Integrate;
-    }
-
-    /// This Function is responsible for Element level Integration. At every run it Integrates one element.
-    /// In the next run, it integrates the one next in the list.
-    void RunLocalIntegration()
-    {
-        integrate->local_intergrator();
-    }
-
-    void RunLocalIntegration(int thread)
-    {
-        integrate->local_intergrator(thread);
-    }
-
-    void RunLocalIntegrationVector()
-    {
-        integrate->local_intergrator_vector();
-    }
-
-    void RunLocalIntegrationVector(int thread)
-    {
-        integrate->local_intergrator_vector(thread);
-    }
 
     /// This set the matrix size of the matrix A. It is determines from the size of Function v and Function u.
     void SetMatrixSize(sp_mat& A)
@@ -73,6 +46,17 @@ public:
         std::cout<<"Size of vector b= "<<b.n_rows<<","<<b.n_cols<<"\n";
         //b_Internal->zeros(v_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows,1);
         //std::cout<<"Size of vector b= "<<v_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows<<", 1"<<"\n";
+    }
+
+    void SetScalarSize(vec &I)
+    {
+        int TotalNumberOfElements=0;
+        for (int ElmntTyp =0; ElmntTyp<u_Internal.NoOfElementTypes;ElmntTyp++)
+        {
+           TotalNumberOfElements=TotalNumberOfElements+ u_Internal.NoOfElements[ElmntTyp];
+        }
+        cout<<"Total Number of Elements= "<<TotalNumberOfElements<<"\n";
+        I.set_size(TotalNumberOfElements,1);
     }
 
     /// This Function sets the weak form to be inegrated at the local level. It integrated over every element
@@ -128,45 +112,7 @@ public:
         }
     }
 
-    void IntegrateOverElements4Matrix(sp_mat &A, sp_mat &Atemp, int thread, int ElmntTyp, int ElmntStart, int ElmntEnd)
-    {
-        cout<<"Thread "<<thread<<" has been launched!!!\n";
-        integrate->SetElementStartTo(thread, ElmntStart);
-        //int thread=0;
-        Atemp.set_size(A.n_rows, A.n_cols);
-        for (int ElmntNmbr=ElmntStart; ElmntNmbr<ElmntEnd ; ElmntNmbr++)
-        {
-            RunLocalIntegration(thread);
-            umat positions_u=NodePositions_u[ElmntTyp].row(integrate->GetElementNumber(thread));
-            umat positions_v=NodePositions_v[ElmntTyp].row(integrate->GetElementNumber(thread));
-            //cout<<"ElmntNmbr ="<<ElmntNmbr<<" ";
-            sp_mat A_temp2=BatchFill_Atemp(A, ElmntTyp, positions_u, positions_v, thread);
-            Atemp=Atemp+A_temp2;
-            //a_Internal.NextElementNumber();
-            integrate->GoToNextElement(thread);
-        }
-        cout<<"\n";
-        //a_Internal.NextElementType();
-        integrate->GoToNextElementType(thread);
-    }
 
-    void IntegrateElement4Matrix(sp_mat& A, sp_mat& Atemp, int ElmntTyp)
-    {
-        Atemp.set_size(A.n_rows, A.n_cols);
-        for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp] ; ElmntNmbr++)
-        {
-            RunLocalIntegration();
-            umat positions_u=NodePositions_u[ElmntTyp].row(integrate->GetElementNumber());
-            umat positions_v=NodePositions_v[ElmntTyp].row(integrate->GetElementNumber());
-            //cout<<"ElmntNmbr ="<<ElmntNmbr<<"\n";
-            sp_mat A_temp2=BatchFill_Atemp(A, ElmntTyp, positions_u, positions_v);
-            Atemp=Atemp+A_temp2;
-            //a_Internal.NextElementNumber();
-            integrate->GoToNextElement();
-        }
-        //a_Internal.NextElementType();
-        integrate->GoToNextElementType();
-    }
 
     /// This is used for integrating to produce a vector. Generally used for source terms (body forces) and
     /// neumann conditions (traction forces).
@@ -219,41 +165,48 @@ public:
         }
     }
 
-    void IntegrateOverElements4Vector(mat &b, mat &btemp, int thread, int ElmntTyp, int ElmntStart, int ElmntEnd)
+    void RunScalarIntegration(GenericLocalIntegrator& Integrate, vec& I)
     {
-        cout<<"Thread "<<thread<<" has been launched!!!\n";
-        integrate->SetElementStartTo(thread, ElmntStart);
-        btemp=zeros(b.n_rows, b.n_cols);
-        //int thread=0;
-        for (int ElmntNmbr=ElmntStart; ElmntNmbr<ElmntEnd; ElmntNmbr++)
+        SetLocalIntegrator(Integrate);
+        SetScalarSize(I);
+        cout<<"Integrating over "<<u_Internal.PhysicalGrpName<<"\n";
+        for (int ElmntTyp=0; ElmntTyp<u_Internal.NoOfElementTypes; ElmntTyp++)
         {
-            RunLocalIntegrationVector(thread);
-            umat positions_v=NodePositions_v[ElmntTyp].row(integrate->GetElementNumber(thread));
-            //cout<<"Neumann Condition applied over "<<u_Internal.Msh->NodalCoordinates.rows(temp)<<"\n";
-            umat positions2={0};
-            btemp.submat(positions_v, positions2)=btemp.submat(positions_v, positions2)+integrate->GetResultingVector(thread);
-            //a_Internal.NextElementNumber();
-            integrate->GoToNextElement(thread);
-        }
-        //a_Internal.NextElementType();
-        integrate->GoToNextElementType(thread);
-    }
+            int ElmntDivision=u_Internal.NoOfElements[ElmntTyp]/numOfThreads;
+            if(integrate->IsUsingFormMultiThread())
+            {
+                //std::vector<double> I_Temp(numOfThreads);
+                std::thread Fill_I_Thread[numOfThreads];
+                for (int thread=0; thread<numOfThreads; thread++)
+                {
+                    if(thread<numOfThreads-1)
+                    {
+                        Fill_I_Thread[thread]=std::thread(&SystemAssembler::IntegrateOverElements4Scalar, this, std::ref(I), thread, ElmntTyp,
+                                                          ElmntDivision*thread, ElmntDivision*(thread+1));
+                    }
+                    else
+                    {
+                        Fill_I_Thread[thread]=std::thread(&SystemAssembler::IntegrateOverElements4Scalar, this, std::ref(I), thread, ElmntTyp,
+                                                          ElmntDivision*thread, u_Internal.NoOfElements[ElmntTyp]);
+                    }
+                }
+                for (int thread=0; thread<numOfThreads; thread++)
+                {
+                    Fill_I_Thread[thread].join();
+                }
 
-    void IntegrateElements4Vector(mat &b, mat &btemp, int ElmntTyp)
-    {
-        btemp=zeros(b.n_rows, b.n_cols);
-        for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp]; ElmntNmbr++)
-        {
-            RunLocalIntegrationVector();
-            umat positions_v=NodePositions_v[ElmntTyp].row(integrate->GetElementNumber());
-            //cout<<"Neumann Condition applied over "<<u_Internal.Msh->NodalCoordinates.rows(temp)<<"\n";
-            umat positions2={0};
-            btemp.submat(positions_v, positions2)=btemp.submat(positions_v, positions2)+integrate->GetResultingVector();
-            //a_Internal.NextElementNumber();
-            integrate->GoToNextElement();
+            }
+            else
+            {
+                for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp]; ElmntNmbr++)
+                {
+                    RunLocalIntegrationScalar();
+                    I(ElmntNmbr)=integrate->GetResultingScalar();
+                    integrate->GoToNextElement();
+                }
+             integrate->GoToNextElementType();
+            }
         }
-        //a_Internal.NextElementType();
-        integrate->GoToNextElementType();
     }
 
 private:
@@ -266,6 +219,88 @@ private:
     sp_mat* A_Internal;
     mat * b_Internal;
     int numOfThreads;
+
+    /// This function causes the weak form defined in the class of Integrate to be executed.
+    void SetLocalIntegrator(GenericLocalIntegrator& Integrate)
+    {
+        integrate=&Integrate;
+    }
+
+    /// This Function is responsible for Element level Integration. At every run it Integrates one element.
+    /// In the next run, it integrates the one next in the list.
+    void RunLocalIntegration()
+    {
+        integrate->local_intergrator();
+    }
+
+    void RunLocalIntegration(int thread)
+    {
+        integrate->local_intergrator(thread);
+    }
+
+    void RunLocalIntegrationVector()
+    {
+        integrate->local_intergrator_vector();
+    }
+
+    void RunLocalIntegrationVector(int thread)
+    {
+        integrate->local_intergrator_vector(thread);
+    }
+
+    void RunLocalIntegrationScalar()
+    {
+        integrate->local_integration_scalar();
+    }
+
+    void RunLocalIntegrationScalar(int thread)
+    {
+        integrate->local_integration_scalar(thread);
+    }
+
+
+    ///Responsible for adding over each element and then moving on to the next element for matrices. This is multithreaded.
+    void IntegrateOverElements4Matrix(sp_mat &A, sp_mat &Atemp, int thread, int ElmntTyp, int ElmntStart, int ElmntEnd)
+    {
+        cout<<"Thread "<<thread<<" has been launched!!!\n";
+        integrate->SetElementStartTo(thread, ElmntStart);
+        //int thread=0;
+        Atemp.set_size(A.n_rows, A.n_cols);
+        for (int ElmntNmbr=ElmntStart; ElmntNmbr<ElmntEnd ; ElmntNmbr++)
+        {
+            RunLocalIntegration(thread);
+            umat positions_u=NodePositions_u[ElmntTyp].row(integrate->GetElementNumber(thread));
+            umat positions_v=NodePositions_v[ElmntTyp].row(integrate->GetElementNumber(thread));
+            //cout<<"ElmntNmbr ="<<ElmntNmbr<<" ";
+            sp_mat A_temp2=BatchFill_Atemp(A, ElmntTyp, positions_u, positions_v, thread);
+            Atemp=Atemp+A_temp2;
+            //a_Internal.NextElementNumber();
+            integrate->GoToNextElement(thread);
+        }
+        cout<<"\n";
+        //a_Internal.NextElementType();
+        integrate->GoToNextElementType(thread);
+    }
+
+    ///Responsible for adding over each element and then moving on to the next element for matrices. This is single threaded.
+    void IntegrateElement4Matrix(sp_mat& A, sp_mat& Atemp, int ElmntTyp)
+    {
+        Atemp.set_size(A.n_rows, A.n_cols);
+        for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp] ; ElmntNmbr++)
+        {
+            RunLocalIntegration();
+            umat positions_u=NodePositions_u[ElmntTyp].row(integrate->GetElementNumber());
+            umat positions_v=NodePositions_v[ElmntTyp].row(integrate->GetElementNumber());
+            //cout<<"ElmntNmbr ="<<ElmntNmbr<<"\n";
+            sp_mat A_temp2=BatchFill_Atemp(A, ElmntTyp, positions_u, positions_v);
+            Atemp=Atemp+A_temp2;
+            //a_Internal.NextElementNumber();
+            integrate->GoToNextElement();
+        }
+        //a_Internal.NextElementType();
+        integrate->GoToNextElementType();
+    }
+
 
     /// This function fill ups the A_temp or rather the local matrix for the element.
     /// The current value of the local element is stored in the 'a_Internal.ResultingMat' matrix.
@@ -296,6 +331,61 @@ private:
         sp_mat A_temp=sp_mat(add_values, locations, values, A.n_rows, A.n_cols, sort_locations, check_for_zeros);
         return A_temp;
     }
+
+
+    /// Responsible for adding over each element and then moving on to the next element for vectors. This is multithreaded.
+    void IntegrateOverElements4Vector(mat &b, mat &btemp, int thread, int ElmntTyp, int ElmntStart, int ElmntEnd)
+    {
+        cout<<"Thread "<<thread<<" has been launched!!!\n";
+        integrate->SetElementStartTo(thread, ElmntStart);
+        btemp=zeros(b.n_rows, b.n_cols);
+        //int thread=0;
+        for (int ElmntNmbr=ElmntStart; ElmntNmbr<ElmntEnd; ElmntNmbr++)
+        {
+            RunLocalIntegrationVector(thread);
+            umat positions_v=NodePositions_v[ElmntTyp].row(integrate->GetElementNumber(thread));
+            //cout<<"Neumann Condition applied over "<<u_Internal.Msh->NodalCoordinates.rows(temp)<<"\n";
+            umat positions2={0};
+            btemp.submat(positions_v, positions2)=btemp.submat(positions_v, positions2)+integrate->GetResultingVector(thread);
+            //a_Internal.NextElementNumber();
+            integrate->GoToNextElement(thread);
+        }
+        //a_Internal.NextElementType();
+        integrate->GoToNextElementType(thread);
+    }
+
+    /// Responsible for adding over each element and then moving on to the next element for vectors. This is single threaded.
+    void IntegrateElements4Vector(mat &b, mat &btemp, int ElmntTyp)
+    {
+        btemp=zeros(b.n_rows, b.n_cols);
+        for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp]; ElmntNmbr++)
+        {
+            RunLocalIntegrationVector();
+            umat positions_v=NodePositions_v[ElmntTyp].row(integrate->GetElementNumber());
+            //cout<<"Neumann Condition applied over "<<u_Internal.Msh->NodalCoordinates.rows(temp)<<"\n";
+            umat positions2={0};
+            btemp.submat(positions_v, positions2)=btemp.submat(positions_v, positions2)+integrate->GetResultingVector();
+            //a_Internal.NextElementNumber();
+            integrate->GoToNextElement();
+        }
+        //a_Internal.NextElementType();
+        integrate->GoToNextElementType();
+    }
+
+    void IntegrateOverElements4Scalar(vec &I, int thread, int ElmntTyp, int ElmntStart, int ElmntEnd)
+    {
+        integrate->SetElementStartTo(thread, ElmntStart);
+        //cout<<"Size of I = ("<<I.n_rows<<", "<<I.n_cols<<")\n";
+        for (int ElmntNmbr=ElmntStart; ElmntNmbr<ElmntEnd; ElmntNmbr++)
+        {
+            RunLocalIntegrationScalar(thread);
+            I(ElmntNmbr,0)=integrate->GetResultingScalar(thread);
+            integrate->GoToNextElement(thread);
+        }
+        integrate->GoToNextElementType(thread);
+        cout<<"\n";
+    }
+
 };
 
 #endif // SYSTEMASSEMBLY_HPP
