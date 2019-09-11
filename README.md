@@ -94,24 +94,24 @@ To understand on how to use the library you should have some understanding of C+
 
 Before going forward, some understanding of the file structure of the Library is needed.  
 
-ProjectFEA  -> *_Main Project Directory._*  
-├── Cpp -> *_All C++ related files are here._*  
-│   ├── armadillo   -> *_Project FEA depends on armadillo library for matrix manipulations._*  
-│   ├── BaseGeom    -> *_Contains .geo files of one element domain. Lets ProjectFEA know how gmsh numbers it's nodes in reference elements._*  
-│   ├── DirichletBC -> *_Contains files that are responsible for applying Dirichlet Boundary conditions._*  
-│   ├── FEMtools    -> *_Contains some simple tools responsible for loading the right gauss file and manipulating the row/column position of data as per node position._*  
-│   ├── GaussData   -> *_Contains text files having Gauss points and weights._*    
-│   ├── GmshWriter  -> *_Sends post-process data back to Gmsh API to generate post-processing files._*  
-│   ├── Integrator  -> *_Contains files that are responsible to integrate over the element (Local Integrator) and files responsible for global matrix assembly (System Assembler)._*  
-│   ├── libGmshReader   -> *_Contains files that are responsible for reading data in Gmsh files._*  
-│   ├── Math    -> *_Contains a few math functions._*  
-│   ├── Models  -> *_Weak forms and other formulations of models are to be coded here for easy reuse._*  
-│   ├── OneElmntGeom  -> *_Sample One Element geometry files are here to provide for testing algorithms._*  
-│   ├── Pics  -> *_Pictures of Simulations are saved here._*  
-│   ├── ProjectJacobian -> *_This has files to calculate Jacobian of vectors._*  
-│   ├── SampleGmsh  -> *_Contains Sample geometry and mesh files for Testing._*  
-│   ├── ShapeFunction   -> *_Contains files responsible for generation of Shape Functions._*  
-│   ├── TestAndTrialFunction    -> *_Contains the Form Class that is responsible for easy declaration of weak forms and all the different kinds of Test and Trial Function codes._*  
-│   └── Variable    -> *_Contains files that allow for the easy declaration of array type data._*  
+**ProjectFEA**  -> *_Main Project Directory._*  
+├── **Cpp** -> *_All C++ related files are here._*  
+│   ├── **armadillo**   -> *_Project FEA depends on armadillo library for matrix manipulations._*  
+│   ├── **BaseGeom**    -> *_Contains .geo files of one element domain. Lets ProjectFEA know how gmsh numbers it's nodes in reference elements._*  
+│   ├── **DirichletBC** -> *_Contains files that are responsible for applying Dirichlet Boundary conditions._*  
+│   ├── **FEMtools**    -> *_Contains some simple tools responsible for loading the right gauss file and manipulating the row/column position of data as per node position._*  
+│   ├── **GaussData**   -> *_Contains text files having Gauss points and weights._*    
+│   ├── **GmshWriter**  -> *_Sends post-process data back to Gmsh API to generate post-processing files._*  
+│   ├── **Integrator**  -> *_Contains files that are responsible to integrate over the element (Local Integrator) and files responsible for global matrix assembly (System Assembler)._*  
+│   ├── **libGmshReader**   -> *_Contains files that are responsible for reading data in Gmsh files._*  
+│   ├── **Math**    -> *_Contains a few math functions._*  
+│   ├── **Models**  -> *_Weak forms and other formulations of models are to be coded here for easy reuse._*  
+│   ├── **OneElmntGeom**  -> *_Sample One Element geometry files are here to provide for testing algorithms._*  
+│   ├── **Pics**  -> *_Pictures of Simulations are saved here._*  
+│   ├── **ProjectJacobian** -> *_This has files to calculate Jacobian of vectors._*  
+│   ├── **SampleGmsh**  -> *_Contains Sample geometry and mesh files for Testing._*  
+│   ├── **ShapeFunction**   -> *_Contains files responsible for generation of Shape Functions._*  
+│   ├── **TestAndTrialFunction**    -> *_Contains the Form Class that is responsible for easy declaration of weak forms and all the different kinds of Test and Trial Function codes._*  
+│   └── **Variable**    -> *_Contains files that allow for the easy declaration of array type data._*  
 ├── Octave  -> *_Contains old octave/Matlab files that were once used as a proof of concept._*  
 
