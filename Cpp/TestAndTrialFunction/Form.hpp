@@ -140,8 +140,9 @@ public:
         return grad_v*grad_u;
     }
 
-     sp_mat dot(vec a, sp_mat grad_u)
+     sp_mat vctr_dot_grad_u(vec a, GenericTrialFunction& u)
     {
+         sp_mat grad_u=u.Get_grad_u(ElementType, ElementNumber, GaussPntr);
         //return dot_vectrLvl_grad_u(a,grad_u);
         int& vectorLvl = u_Internal->vectorLvl;
         if (vectorLvl==1)
@@ -154,19 +155,46 @@ public:
         }
         else
         {
-            mat vctr=a(span(0,u_Internal->vectorLvl-1)).t();
+           /* mat vctr=a(span(0,u_Internal->vectorLvl-1)).t();
             sp_mat vecMatrx(vctr.n_cols,vectorLvl*vctr.n_cols);
             for (int i=0; i<vectorLvl; i++)
             {
                 //cout<<"col ="<<i*vectorLvl<<":"<<i*vectorLvl+vectorLvl-1;
                 //vecMatrx.cols(i*vectorLvl,i*vectorLvl+vectorLvl-1)=sp_mat(diagmat(vctr.t()));
                 vecMatrx.cols(i*vectorLvl,i*vectorLvl+vectorLvl-1)=vctr(0,i)*speye(vectorLvl,vectorLvl);
-            }
+            }*/
+            sp_mat vecMatrx=vector_4_dot_grad(a);
             return vecMatrx*grad_u;
         }
-
     }
 
+     sp_mat vctr_dot_grad_v(vec a, TestFunctionGalerkin<TrialFunction>& v)
+    {
+         sp_mat grad_v=v.Get_grad_v(ElementType, ElementNumber, GaussPntr);
+        //return dot_vectrLvl_grad_u(a,grad_u);
+        int& vectorLvl = v.vectorLvl;
+        if (vectorLvl==1)
+        {
+            //mat aMatrx=repmat(a.t(),grad_u.n_rows,1);
+            //return sp_mat(aMatrx%grad_u);
+            vec aMatrx=vectorise(a.rows(0,v.MeshDimension-1).t());
+            //cout<<grad_u;
+            return sp_mat(grad_v*aMatrx);
+        }
+        else
+        {
+           /* mat vctr=a(span(0,u_Internal->vectorLvl-1)).t();
+            sp_mat vecMatrx(vctr.n_cols,vectorLvl*vctr.n_cols);
+            for (int i=0; i<vectorLvl; i++)
+            {
+                //cout<<"col ="<<i*vectorLvl<<":"<<i*vectorLvl+vectorLvl-1;
+                //vecMatrx.cols(i*vectorLvl,i*vectorLvl+vectorLvl-1)=sp_mat(diagmat(vctr.t()));
+                vecMatrx.cols(i*vectorLvl,i*vectorLvl+vectorLvl-1)=vctr(0,i)*speye(vectorLvl,vectorLvl);
+            }*/
+            sp_mat vecMatrx=vector_4_dot_grad(a);
+            return grad_v*vecMatrx.t();
+        }
+    }
 
      double dX(GenericTrialFunction u)
     {
@@ -229,6 +257,20 @@ public:
 protected:
     GenericTrialFunction *u_Internal;
     TestFunctionGalerkin<GenericTrialFunction> *v_Internal;
+
+    inline sp_mat vector_4_dot_grad(vec& a)
+    {
+        int& vectorLvl = u_Internal->vectorLvl;
+        mat vctr=a(span(0,u_Internal->vectorLvl-1)).t();
+        sp_mat vecMatrx(vctr.n_cols,vectorLvl*vctr.n_cols);
+        for (int i=0; i<vectorLvl; i++)
+        {
+            //cout<<"col ="<<i*vectorLvl<<":"<<i*vectorLvl+vectorLvl-1;
+            //vecMatrx.cols(i*vectorLvl,i*vectorLvl+vectorLvl-1)=sp_mat(diagmat(vctr.t()));
+            vecMatrx.cols(i*vectorLvl,i*vectorLvl+vectorLvl-1)=vctr(0,i)*speye(vectorLvl,vectorLvl);
+        }
+        return vecMatrx;
+    }
 };
 
 

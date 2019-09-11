@@ -43,10 +43,12 @@ class VariableGeneric
     }
     std::vector<GenericMatrix> Term;
 
-    sp_mat operator[](int index)
+    GenericMatrix operator[](int index)
     {
         return Term[index];
     }
 };
+
+
 
 #endif // VARIABLE_HPP

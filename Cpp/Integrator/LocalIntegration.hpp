@@ -72,11 +72,13 @@ public:
 
     virtual double scalar_integration(Form<GenericTrialFunction>& a, GenericTrialFunction& u)
     {
+        cout<<"Warining!!! Internal default virtual function for scalar in single thread is running\n";
         return a.dX(u);
     }
 
     virtual double scalar_integration(FormMultiThread<GenericTrialFunction>& a, GenericTrialFunction& u, int thread)
     {
+         cout<<"Warining!!! Internal default virtual function for matrix in single thread is running\n";
         return a[thread].dX(u);
     }
 

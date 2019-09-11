@@ -5,6 +5,7 @@ template<class GenericTrialFunction>
 class TestFunctionGalerkin
 {
 public:
+    int MeshDimension;
     int vectorLvl;
     int originalVctrLvl;
     int numOfNodes;
@@ -18,6 +19,7 @@ public:
     TestFunctionGalerkin(GenericTrialFunction& _u)
     {
         u=&_u;
+        MeshDimension=_u.MeshDimension;
         vectorLvl=_u.vectorLvl;
         originalVctrLvl=_u.originalVctrLvl;
         numOfNodes=_u.Msh->NodeTag.n_rows;

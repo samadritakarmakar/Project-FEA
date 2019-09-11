@@ -64,3 +64,5 @@ Physical Curve("locked") = {4};
 Physical Curve("lockedxy") = {7};
 //+
 Physical Surface("ForceSurf") = {4};
+//+
+Physical Surface("lockedsurf") = {2};
