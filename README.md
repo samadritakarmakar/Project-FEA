@@ -113,5 +113,5 @@ Before going forward, some understanding of the file structure of the Library is
 │   ├── **ShapeFunction**   -> *_Contains files responsible for generation of Shape Functions._*  
 │   ├── **TestAndTrialFunction**    -> *_Contains the Form Class that is responsible for easy declaration of weak forms and all the different kinds of Test and Trial Function codes._*  
 │   └── **Variable**    -> *_Contains files that allow for the easy declaration of array type data._*  
-├── Octave  -> *_Contains old octave/Matlab files that were once used as a proof of concept._*  
+├── **Octave**  -> *_Contains old octave/Matlab files that were once used as a proof of concept._*  
 
