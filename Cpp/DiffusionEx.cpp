@@ -1,15 +1,19 @@
 #include "ProjectFEA.hpp"
 #include <math.h>
 
-void GetStabilizationParameters(const double& sizeElement, const vec& vel, const double& nu, const double& sigma,
-                               double& Pe, double& tau)
+void GetStabilizationParameters(const double& sizeElement, const vec& vel, const double& nu, const double& sigma, double& tau)
 {
     double normVel=norm(vel);
-    Pe=normVel*sizeElement/(2.0*nu);
-    double beta=1/(std::tanh(Pe)-1/Pe);
+    double sizeElement2=sizeElement;
+    double Pe=normVel*sizeElement2/(2.0*nu);
+    double pe1=vel(0)*sizeElement2/(2.0*nu);
+    double pe2=vel(1)*sizeElement2/(2.0*nu);
+    Pe=(pe1+pe2)/2;
+    double beta=(1.0/(1.0/std::tanh(Pe)-1.0/Pe));
     //tau=(sizeElement/(2.0*normVel))*1.0/(1.0+1.0/Pe+sizeElement*sigma/(2.0*normVel));
+    //tau.set_size(vel.n_rows, vel.n_rows);
+    tau=beta*sizeElement2/(2.0*normVel);
     tau=1.0;
-
 }
 
 class FindSize : public LocalIntegrator<TrialFunction>
@@ -37,10 +41,11 @@ public:
         sp_mat LHS;
         sp_mat R_u_LHS;
         sp_mat P_v_LHS;
-        double tau, hTemp, Pe;
+        double hTemp; //Pe;
+        double tau;
         /// The size of the Element. Volume for 3D, Area for 2D.
         hTemp=(h(a[thread].ElementNumber));
-        GetStabilizationParameters(hTemp, vel, nu, sigma, Pe, tau);
+        GetStabilizationParameters(hTemp, vel, nu, sigma, tau);
         ///VariableGeneric<double>R_u_RHS(a.GetNumOfThreads());
         /// Represents (a.grad(u)+sigma*u) -------- See equation 2.55 in Finite Element Methods
         /// for Flow Problems. Jean Donea and Antonio Huerta.
@@ -68,13 +73,14 @@ public:
     mat weak_form_vector(FormMultiThread<TrialFunction>& a, TrialFunction& u,
                              TestFunctionGalerkin<TrialFunction>& v, int thread)
     {
-        double Pe, tau;
+        //double Pe;
+        double tau;
         double hTemp=(h(a[thread].ElementNumber));
-        GetStabilizationParameters(hTemp, vel, nu, sigma, Pe, tau);
+        GetStabilizationParameters(hTemp, vel, nu, sigma, tau);
         double R_u_RHS=source;
-        sp_mat P_v_RHS=a[thread].vctr_dot_grad_v(vel,v);
+        sp_mat P_v_RHS=a[thread].vctr_dot_grad_v(vel,v)+sigma*a[thread].v(v);;
         sp_mat RHS=a[thread].v(v)*source;
-        return mat(tau*P_v_RHS*R_u_RHS+RHS)*a[thread].dX(u);
+        return mat(P_v_RHS*tau*R_u_RHS+RHS)*a[thread].dX(u);
     }
     vec &h, &vel;
     double &nu;
@@ -153,7 +159,7 @@ int main(int argc, char *argv[])
     }
     else if (Dimension==2)
     {
-        vel<<4.0<<endr<<4.0;
+        vel<<1.0<<endr<<4.0;
     }
     TestFunctionGalerkin<TrialFunction> v(u);
     FormMultiThread<TrialFunction> a;

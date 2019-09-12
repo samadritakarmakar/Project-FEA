@@ -39,15 +39,22 @@ The .msh file "SampleGmsh/Bar.msh" or "SampleGmsh/Bar2.msh" can be used for test
     
 or   
 
-    ./ElasticityEx SampleGmsh/ElasticExHexOrdr1.png 3
+    ./ElasticityEx SampleGmsh/Bar2.msh 3
 
   
     
-<img src="Cpp/Pics/ElasticExHexOrdr1.png" alt="Hexahedral of Order 3">
+<img src="Cpp/Pics/StressWithDisplacement.png" alt="Hexahedral of Order 3">
   
 In case of the Bar example, a case of cantilever beam is tested, where a force of 4kN is applied at the end of a (2000mm x 200mm x 60mm) bar with a fixed end at the other side. The force is applied on the surface (200mm x 60mm). Young's modulus is supposed 200 Gpa.  
 By using formula delta_L =Pl^3/(3EI) we get 14.8mm deflection.  
 The finite element converges to that solution as the order of the elements and the number of nodes are increased.  
+
+or You may try the example of Advection-Diffusion
+
+    ./DiffusionEx SampleGmsh/Chimney.msh 2
+    
+<img src="Cpp/Pics/DnstyFldCmbnd.png" alt="Advection-Diffusion Example of order 1">    
+
 
 ## One Click Download and Compilation
 
@@ -89,7 +96,7 @@ The go to your build directory and type
     
 
 
-## How to Use.
+## How to Use. (Still being Written)
 To understand on how to use the library you should have some understanding of C++ and Finite Element Methods, specially on how to derive weak forms.  
 
 Before going forward, some understanding of the file structure of the Library is needed.  
