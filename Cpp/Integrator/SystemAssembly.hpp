@@ -198,6 +198,7 @@ public:
             }
             else
             {
+                integrate->SetElementStartTo(0, 0);
                 for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp]; ElmntNmbr++)
                 {
                     RunLocalIntegrationScalar();
@@ -285,6 +286,7 @@ private:
     ///Responsible for adding over each element and then moving on to the next element for matrices. This is single threaded.
     void IntegrateElement4Matrix(sp_mat& A, sp_mat& Atemp, int ElmntTyp)
     {
+        integrate->SetElementStartTo(0, 0);
         Atemp.set_size(A.n_rows, A.n_cols);
         for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp] ; ElmntNmbr++)
         {
@@ -357,6 +359,7 @@ private:
     /// Responsible for adding over each element and then moving on to the next element for vectors. This is single threaded.
     void IntegrateElements4Vector(mat &b, mat &btemp, int ElmntTyp)
     {
+        integrate->SetElementStartTo(0, 0);
         btemp=zeros(b.n_rows, b.n_cols);
         for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp]; ElmntNmbr++)
         {

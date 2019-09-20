@@ -220,7 +220,7 @@ public:
         }
     }
     */
-    /// Gets the interpolated value of [x,y,z] at a cetrian Gauss point
+    /// Gets the Interpolated value of [x,y,z] at a cetrian Gauss point
     mat Get_x(int ElementType, int ElementNumber, int GaussPntr)
     {
         umat NodesAtElmntNmbr=Msh->ElementNodes[ElementType].row(ElementNumber);
@@ -229,6 +229,19 @@ public:
         return x;
     }
 
+    /// Returns the Node Numbers at a Certain Element Number.
+    inline umat GetNodesAt(const int& ElementType ,const int& ElementNumber)
+    {
+        umat NodesAtElmntNmbr=Msh->ElementNodes[ElementType].row(ElementNumber);
+        return NodesAtElmntNmbr;
+    }
+
+    /// Returns the Coordinates at given Nodes
+    inline mat GetCoordinatesAt(const umat& Nodes)
+    {
+        mat Coordinates=Msh->NodalCoordinates.rows(Nodes);
+        return Coordinates;
+    }
 
 
     /// Gives an output for trace of grad u

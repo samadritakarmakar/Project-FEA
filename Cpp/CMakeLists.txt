@@ -71,6 +71,9 @@ target_link_libraries (OneElmntVrfy ProjectFEA)
 add_executable(DiffusionEx DiffusionEx.cpp)
 target_link_libraries (DiffusionEx ProjectFEA)
 
+#add_executable(Trial Trial.cpp)
+#target_link_libraries (Trial ProjectFEA)
+
 set (COPY_FILES BaseGeom GaussData OneElmntGeom SampleGmsh)
 foreach(loop_var ${COPY_FILES})
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${loop_var} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)

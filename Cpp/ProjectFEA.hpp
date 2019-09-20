@@ -14,6 +14,8 @@
 #include "Expression.hpp"
 #include "Variable.hpp"
 #include "GmshWriter.hpp"
+#include "vecnorm.hpp"
+#include "GetLengthAlongVector.hpp"
 //#include "PreDefinedElasticityTensor.hpp"
 #include "Models.hpp"
 
