@@ -31,7 +31,15 @@ public:
         std::vector<std::vector<double>> Nodedata;
         getNodeTagAndNodeData(x, Nodetags, Nodedata);
         gmsh::view::addModelData(currentViewTag, step, modelName, dataType, Nodetags, Nodedata, time, u_Internal.originalVctrLvl);
-        gmsh::view::write(currentViewTag, outputFileName);
+        if (step==0)
+        {
+            gmsh::view::write(currentViewTag, outputFileName);
+        }
+        else
+        {
+            gmsh::view::write(currentViewTag, outputFileName, true);
+        }
+
         gmsh::finalize();
     }
 

@@ -39,7 +39,7 @@ Plane Surface(1) = {1};
 //+
 Physical Curve("FluxLine") = {3};
 //+
-Physical Curve("ZeroLine") = {8, 1, 2};
+Physical Curve("ZeroLine") = {8, 1, 2, 4, 5};
 //+
 Characteristic Length {5, 4} = 0.01;
 

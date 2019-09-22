@@ -4,42 +4,11 @@
 void GetStabilizationParameters(const vec& sizeElement, const vec& vel, const double& nu, const double& sigma, double& tau)
 {
     double normVel=norm(vel);
-    /*mat sizeElement2=(sizeElement);
-    mat eps_zero=eps(zeros(1,1));
-
-    //double Pe=normVel*sizeElement2/(2.0*nu);
-    double pe0=abs(vel(0)*sizeElement2(0)/(2.0*nu));
-    double pe1=abs(vel(1)*sizeElement2(1)/(2.0*nu));
-
-    double xi0=1.0/std::tanh(pe0)-1.0/pe0;
-    double xi1=1.0/std::tanh(pe1)-1.0/pe1;
-    if(isnan(xi0))
-    {
-        xi0=0;
-    }
-    else if (isnan(xi1))
-    {
-        xi1=0;
-    }
-    double nu_=(xi0*sizeElement(0)*vel(0)+xi1*sizeElement(1)*vel(1))/2.0;
-    if(isnan(tau))
-    {
-        cout<<"tau is Nan"<<"pe0 = "<<pe0<<" pe1 = "<<pe1<<"\n";
-        throw;
-    }
-    //tau.set_size(vel.n_rows, vel.n_rows);
-    tau=abs(nu_/std::pow(normVel, 2.0));
-    //tau=(xi0+xi1)/(2.0);
-    if(pe0 >1 || pe1 >1)
-    {
-        cout<<"pe0 = "<<pe0<<" pe1 = "<<pe1<<" xi0= "<<xi0<<" xi1= "<<xi1<<" tau = "<<tau<<"\n";
-    }*/
-
     double sizeElement2=norm(sizeElement);
     double Pe=normVel*sizeElement2/(2.0*nu);
-    double alpha=1.0-1/Pe;
+    double alpha=1.0/std::tanh(Pe)-1/Pe;
     tau=alpha*sizeElement2/(2.0*normVel);
-    //tau=0.0;
+    //tau=0.0; //Use in case you wish to over diffuse.
 }
 
 class FindSize : public LocalIntegrator<TrialFunction>
@@ -78,7 +47,7 @@ public:
         R_u_LHS=a[thread].vctr_dot_grad_u(vel,u)+sigma*a[thread].u(u);
         P_v_LHS=a[thread].vctr_dot_grad_v(vel,v);
         //Represents nu*dot(grad(v),grad(u))+v*dot(vel,grad(u))+sigma*u)
-        LHS=nu*a[thread].dot(a[thread].grad(v),a[thread].grad(u))+
+        LHS=(nu+0.25*tau)*a[thread].dot(a[thread].grad(v),a[thread].grad(u))+
                 a[thread].v(v)*(a[thread].vctr_dot_grad_u(vel,u)+sigma*a[thread].u(u));
         //return (LHS)*a[thread].dX(u);
         return (LHS+tau*P_v_LHS*R_u_LHS)*a[thread].dX(u);
@@ -178,7 +147,7 @@ int main(int argc, char *argv[])
     //Parameters of Advection-Diffusion-Reaction equation.
     //Diffusion coefficent of Carbon Monoxoide in air
     double nu=0.208e-4;
-    double sigma=0.0, source=0.0, NrmlFlux=-.05;
+    double sigma=0.0, source=0.0, NrmlFlux=-5.0;
     vec vel;
     if(Dimension==3)
     {
@@ -195,13 +164,8 @@ int main(int argc, char *argv[])
     FindSize SizeOfElement(a,u,v);
     SclrIntrgtn.RunScalarIntegration(SizeOfElement, h);
     h=abs(h);
-    cout<<"Total Volume = "<<sum(h)<<"\n";
+    cout<<"Total Volume = "<<sum(h)<<"\n";*/
 
-    for (int ElmntNmbr=0; ElmntNmbr<u.NoOfElements[0]; ElmntNmbr++)
-    {
-        umat NodesAtElmnt=u.GetNodesAt(0, ElmntNmbr);
-        mat Coordinates = u.GetCoordinatesAt(NodesAtElmnt);
-    }*/
     mat h=GetLengthAlongVector(u, Dimension, vel);
     SystemAssembler<DiffusionLHS, TrialFunction> Dffsn_LHS_MtrxSystm(a, u, v);
     DiffusionLHS Dffsn_LHS(a, u, v, h, vel, nu, sigma);
