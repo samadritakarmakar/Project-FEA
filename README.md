@@ -125,10 +125,28 @@ Before going forward, some understanding of the file structure of the Library is
 ├── **Octave**  -> *_Contains old octave/Matlab files that were once used as a proof of concept._*  
 
 ### So let us start with the definition of a weak form in ProjectFEA.
-If you open the file Project-FEA/Cpp/Integrator/ [LocalIntegration.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Integrator/LocalIntegration.hpp) you will see at least three different virtual functions defined. They are "weak_form", "weak_form_vector" or "scalar_integration".  
-"weak_form" is to be used for definition of the part of weak form that result in matrices to being formed. Such as the stiffness matrix 'A' in the equation '[A]{x}={b}'.   
-"weak_form_vector" is to be used for definition of the part of weak form that result in vector to being formed. Such as the vector 'b' in the equation '[A]{x}={b}'.  
-"scalar_integration" can be used to find out some scalar properties of the element. For example, the volume of an element can be found by integrating over dX.  
+If you open the file Project-FEA/Cpp/Integrator/ [LocalIntegration.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Integrator/LocalIntegration.hpp) you will see at least three different **virtual functions** defined. They are **"weak_form"**, **"weak_form_vector"** or **"scalar_integration"**.  
+* "weak_form" is to be used for definition of the part of weak form that result in matrices to being formed. Such as the stiffness matrix 'A' in the equation '[A]{x}={b}'.   
+* "weak_form_vector" is to be used for definition of the part of weak form that result in vector to being formed. Such as the vector 'b' in the equation '[A]{x}={b}'.  
+* "scalar_integration" can be used to find out some scalar properties of the element. For example, the volume of an element can be found by integrating over dX.  
+
 For defining the weak form, a new class has to be defined which inherits the class **LocalIntegrator** defined in [LocalIntegration.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Integrator/LocalIntegration.hpp).
 To use any of these functions, it is advised to head over to the file [LocalIntegration.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Integrator/LocalIntegration.hpp) and copy the function to the class of your definition.  
-You may now refer to the example of [Poisson](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Poisson.cpp) which in this case is a single thread definition and is easy to understand for starting with ProjectFEA.  
+You may now refer to the example of [Poisson.cpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Poisson.cpp) which in this case is a single thread definition and is easy to understand for starting with ProjectFEA. Poisson equation has the following weak form, if it as a source and well as a Neumann Boundary Condition where the flux is equal to the vector **t**.  
+
+<img src="Cpp/Pics/Formulations/Poisson.png" alt="Poisson">  
+
+The Left hand side of this equation may represented by the following code as seen in [Poisson.cpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Poisson.cpp)  
+
+            class new_LocalIntegrator: public LocalIntegrator<TrialFunction>
+            {
+            public:
+                    new_LocalIntegrator(Form<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v):
+                    LocalIntegrator (a,u,v)
+                    {
+                    }
+                    sp_mat weak_form(Form<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v)
+                    {
+                        return a.inner(a.grad(v),a.grad(u))*a.dX(u);
+                    }
+            };
