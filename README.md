@@ -191,6 +191,23 @@ And the flux over the Neumann Boundary can be defined as,
                 }
             };
             
+The Dirichlet Boundary Condition can vary according to the positon of the node in the domain. This variation in the Dirichlet obundary condition is acheived in ProjectFEA by definiting a virtual function **Eval** in the class **Expression** that is defined in the file  Project-FEA/Cpp/DirichletBC/[Expression.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/DirichletBC/Expression.hpp). A new class has to be defined which ineherits the Expression class and overloads its virtual function **Eval** to apply boundary condition. Within the class DirichletBC defined in Project-FEA/Cpp/DirichletBC/[DirichletBC.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/DirichletBC/DirichletBC.hpp) the [vector](http://arma.sourceforge.net/docs.html#Col) of the current postion of the node is passed to the function **Eval**, which may be used to vary the Dirichlet Boundary according to the node positon.
+            
+            ///This class over here through its overloaded virtual function declares the values of Dirichlet Nodes.
+            /// The virtual function 'Eval' is evaluated at each node to find the value of Dirichlet Condition at that node.
+            class DeclaredExprssn : public Expression
+            {
+            public:
+                DeclaredExprssn (int vectorLevel): Expression (vectorLevel)
+                {
+                }
+                vec Eval(vec& x)
+                {
+                    vec value={0,0,0};
+                    return value;
+                }
+            };
+            
 Once the weak forms are defined, you may start to write the **main()** file.  
 You can start by telling ProjectFEA the mesh file that you wish to use. For example,
 
@@ -222,7 +239,7 @@ ProjectFEA needs to know which class definition has the weak form which has to b
 
         new_LocalIntegrator lcl_intgrt(a,u,v);
         
-Now, you need to tell ProjectFEA the class name that you have defined, the kind of Function it is (in this case TrialFunction) and the pass it the instances of Form, TrialFucntion and TestFunctionGalerkin as shown below.  SystemAssembler is a class defined in  Project-FEA/Cpp/Integrator/[SystemAssembly.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Integrator/SystemAssembly.hpp)  that is responsible for this. 
+Now, you need to tell ProjectFEA the class name that you have defined, the kind of Function it is (in this case TrialFunction) and the pass it the instances of Form, TrialFunction and TestFunctionGalerkin as shown below.  SystemAssembler is a class defined in  Project-FEA/Cpp/Integrator/[SystemAssembly.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Integrator/SystemAssembly.hpp)  that is responsible for this. 
 
         SystemAssembler<new_LocalIntegrator, TrialFunction> systmAssmbly(a,u,v);  
         
@@ -255,4 +272,38 @@ In ProjectFEA, once a matrix or a vector is declared for Global assembly, every 
         SystemAssembler<new_Neu_Surf_LclIntgrtr, TrialFunctionNeumannSurface> systmAssmbly3(a3, u_surf, v_surf);
         systmAssmbly3.RunSystemAssemblyVector(lclintgtr3, b);
         
-The matrix **A** and the vector **b** is now ready for application of Dirichlet Boundary Condition.
+The matrix **A** and the vector **b** is now ready for application of Dirichlet Boundary Condition.  
+The way of applying the Dirichlet Boundary Condition has quite some similarities with way weak forms are evaluated. If suppose there are 3 degrees of freedom per node, then the user may or not want to apply the Boundary condition on all the 3 degrees of freedom. This can be acheived by setting a [umat](http://arma.sourceforge.net/docs.html#Mat) type matrix. If the value for a certain degree of freedom is zero(0) then the Dirichlet Boundary is not applied for that degree of freedom. Here the Boundary condition is appleid for all the nodes, hence the variable is defined as given below.
+
+        umat boolDiricletNodes={1,1,1};
+        
+Next an instance of the class **DirichletBC** is delared.  
+In the first argument passed for the declaration of the instance ProjectFEA needs to know where the nodes lie. If suppose the nodes lie on volume, then passing an instance TrialFunction is sufficient. If it lies on a surface, then an instance of TrialFunctionNeumannSurface has to be passed and in case of a line an instance of TrialFunctionNeumannLine has to be passed.  
+For the second argument the index of the [Physical Group](http://gmsh.info/doc/texinfo/gmsh.html#Geometry) has to be defined. It should be noted that index of the Physical Group number is not the same as the Group Number defined in Gmsh but rather similar to the order in which the physical groups have been defined. If it was the 1st physical group to be defined, then the index would be 0, if 2nd in order, then 1 and so on.  
+Finally, the last argument is for the umat of the Dirichlet Nodes where boundary conditions would have to be applied, as explained earlier.
+        
+        DirichletBC DrchltBC(u_surf,1, boolDiricletNodes);
+        
+An instance of the newly declared expression is defined and is passed on the the function **SetDirichletBCExpression** defined in the class  DirichletBC from the file,  Project-FEA/Cpp/DirichletBC/[DirichletBC.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/DirichletBC/DirichletBC.hpp). After that, the Boundary Condition is applied using the function **ApplyBC** from the same class.
+
+        DeclaredExprssn Dirich(vectorLevel);
+        DrchltBC.SetDirichletBCExpression(Dirich);
+        DrchltBC.ApplyBC(A,b);
+        
+The matrix **A** and the vector are now ready to be solved. Armadillo's sparse matrix solver can be used for this purpose and we can use the [spsolve] function for this and we have two alternatives for this.  
+either,  
+
+        mat X=spsolve(A,b);
+        
+or,   
+
+        mat X;
+        spsolve(X, A, b);
+        
+The second option is a better option, but it does not stop the program if the system of equation [A]{X}={b} has no solution.  
+
+Finally, the solution can be be sent back to the Gmsh API to write an output file. **GmshWriter** class defined in the file  Project-FEA/Cpp/GmshWriter/[GmshWriter.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/GmshWriter/GmshWriter.hpp) can be used to do this.
+First the TrialFunction is passed and then the name of the output file is passed. Then the function **WriteToGmsh** defined in the class **GmshWriter** is used to write the solution matrix to the output file.  
+
+        GmshWriter Write(u, "poisson.pos");
+        Write.WriteToGmsh(X);
