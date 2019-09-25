@@ -97,7 +97,9 @@ The go to your build directory and type
 
 
 ## How to Use. (Still being Written)
-To understand on how to use the library you should have some understanding of C++ and Finite Element Methods, specially on how to derive weak forms.  
+To understand on how to use the library you should have some understanding of C++, Armadillo C++ library and Finite Element Methods, specially on how to derive weak forms.   
+
+Armadillo library is used in ProjectFEA for Matrix manipulations. Armadillo uses syntax that is very similar to Matlab/Octave. You can read more about the Armadillo project and it's documentation [here](http://arma.sourceforge.net/).  
 
 Before going forward, some understanding of the file structure of the Library is needed.  
 
@@ -122,3 +124,11 @@ Before going forward, some understanding of the file structure of the Library is
 │   └── **Variable**    -> *_Contains files that allow for the easy declaration of array type data._*  
 ├── **Octave**  -> *_Contains old octave/Matlab files that were once used as a proof of concept._*  
 
+### So let us start with the definition of a weak form in ProjectFEA.
+If you open the file Project-FEA/Cpp/Integrator/ [LocalIntegration.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Integrator/LocalIntegration.hpp) you will see at least three different virtual functions defined. They are "weak_form", "weak_form_vector" or "scalar_integration".  
+"weak_form" is to be used for definition of the part of weak form that result in matrices to being formed. Such as the stiffness matrix 'A' in the equation '[A]{x}={b}'.   
+"weak_form_vector" is to be used for definition of the part of weak form that result in vector to being formed. Such as the vector 'b' in the equation '[A]{x}={b}'.  
+"scalar_integration" can be used to find out some scalar properties of the element. For example, the volume of an element can be found by integrating over dX.  
+For defining the weak form, a new class has to be defined which inherits the class **LocalIntegrator** defined in [LocalIntegration.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Integrator/LocalIntegration.hpp).
+To use any of these functions, it is advised to head over to the file [LocalIntegration.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Integrator/LocalIntegration.hpp) and copy the function to the class of your definition.  
+You may now refer to the example of [Poisson](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Poisson.cpp) which in this case is a single thread definition and is easy to understand for starting with ProjectFEA.  
