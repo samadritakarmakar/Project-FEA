@@ -132,12 +132,14 @@ If you open the file Project-FEA/Cpp/Integrator/ [LocalIntegration.hpp](https://
 
 For defining the weak form, a new class has to be defined which inherits the class **LocalIntegrator** defined in [LocalIntegration.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Integrator/LocalIntegration.hpp).
 To use any of these functions, it is advised to head over to the file [LocalIntegration.hpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Integrator/LocalIntegration.hpp) and copy the function to the class of your definition.  
-You may now refer to the example of [Poisson.cpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Poisson.cpp) which in this case is a single thread definition and is easy to understand for starting with ProjectFEA. Poisson equation has the following weak form, if it as a source and well as a Neumann Boundary Condition where the flux is equal to the vector **t**.  
+You may now refer to the example of [Poisson.cpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Poisson.cpp) which in this case is a single thread definition and is easy to understand for starting with ProjectFEA. Poisson equation has the following weak form, if it has a source term **b** and well as a Neumann Boundary Condition where the flux is equal to the vector **t**.  
 
 <img src="Cpp/Pics/Formulations/Poisson.png" alt="Poisson">  
 
 The Left hand side of this equation may represented by the following code as seen in [Poisson.cpp](https://github.com/samadritakarmakar/Project-FEA/blob/master/Cpp/Poisson.cpp)  
-
+            
+            /// A new Model is defined here. This weak form is integrated over each element.
+            /// The Virtual 'weak_form' function defined in 'LocalIntegrator' is overloaded during runtime.
             class new_LocalIntegrator: public LocalIntegrator<TrialFunction>
             {
             public:
@@ -149,4 +151,42 @@ The Left hand side of this equation may represented by the following code as see
                     {
                         return a.inner(a.grad(v),a.grad(u))*a.dX(u);
                     }
+            };
+            
+The source term may be defined as,
+
+            /// The Virtual 'weak_form_vector' function defined in 'LocalIntegrator' is overloaded during runtime.
+            class new_LocalIntegrator2: public LocalIntegrator<TrialFunction>
+            {
+            public:
+                    new_LocalIntegrator2(Form<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v):
+                    LocalIntegrator (a,u,v)
+                    {
+                    }
+                    mat weak_form_vector(Form<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v)
+                    {
+                    vec b;
+                    b<<0<<endr<<0<<endr<<0<<endr;
+                    return a.dot(v,b)*a.dX(u);
+                    }
+            };
+            
+And the flux over the Neumann Boundary can be defined as,
+
+            /// The Virtual 'weak_form_vector' function defined in 'LocalIntegrator' is overloaded during runtime.
+            class new_Neu_Surf_LclIntgrtr: public LocalIntegrator <TrialFunctionNeumannSurface>
+            {
+            public:
+                new_Neu_Surf_LclIntgrtr(Form<TrialFunctionNeumannSurface>& a, TrialFunctionNeumannSurface& u,
+                TestFunctionGalerkin<TrialFunctionNeumannSurface>& v):
+                LocalIntegrator (a,u,v)
+                {
+                }
+
+                mat weak_form_vector(Form<TrialFunctionNeumannSurface>& a, TrialFunctionNeumannSurface& u,
+                TestFunctionGalerkin<TrialFunctionNeumannSurface>& v)
+                {
+                    vec vctr={1,1,1};
+                    return a.dot(v,vctr)*a.dS(u);
+                }
             };
