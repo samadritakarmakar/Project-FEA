@@ -190,3 +190,10 @@ And the flux over the Neumann Boundary can be defined as,
                     return a.dot(v,vctr)*a.dS(u);
                 }
             };
+            
+Once the weak forms are defined, you may start to write the **main()** file.  
+You can start by telling ProjectFEA the mesh file that you wish to use. For example,
+
+        libGmshReader::MeshReader Mesh("SampleGmsh/Hexahedral_1.msh", Dimension);
+        
+This will make ProjectFEA read the given mesh and store it's relevant data in Mesh. The **Dimension** integer variable is the dimension of the domain, which in this case is 3.
