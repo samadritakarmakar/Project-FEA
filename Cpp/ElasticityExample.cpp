@@ -7,18 +7,18 @@ using namespace arma;
 class LinearElastic: public LocalIntegrator<TrialFunction>
 {
 public:
-    LinearElastic(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v):
-        LocalIntegrator (a,u,v)
+    LinearElastic(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v, double E, double nu):
+        LocalIntegrator (a,u,v), E(E), nu(nu)
     {
     }
     sp_mat weak_form(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v,
                      int thread)
     {
         sp_mat C;
-        double E=200.0e3;
-        Set_C_3D(C,E);
+        Set_C_3D(C,E,nu);
         return a[thread].inner(a[thread].sym_grad(v),C*a[thread].sym_grad(u))*a[thread].dX(u);
     }
+    double E,nu;
 };
 
 /// A weak form for Body forces is defined here.
@@ -52,8 +52,10 @@ public:
     mat weak_form_vector(FormMultiThread<TrialFunctionNeumannSurface>& a, TrialFunctionNeumannSurface& u,
                          TestFunctionGalerkin<TrialFunctionNeumannSurface>& v, int thread)
     {
-        double Fz=-4.0e3/(200*60);
-        vec vctr={0, 0, Fz};
+        //double Fz=-4.0e3/(200*60);
+        double Fz=0.0;
+        double Fy=-0.046189;
+        vec vctr={0, Fy, Fz};
         return a[thread].dot(v,vctr)*a[thread].dS(u);
     }
 
@@ -87,6 +89,8 @@ public:
     sp_mat weak_form(FormMultiThread<TrialFunction>& a, TrialFunction& u,
                      TestFunctionGalerkin<TrialFunction>& v, int thread)
     {
+        mat(a[thread].u(u)).save("u",arma_ascii);
+        mat(a[thread].v(v)*a[thread].u(u)*a[thread].dX(u)).save("Strss",raw_ascii);
         return a[thread].v(v)*a[thread].u(u)*a[thread].dX(u);
     }
 };
@@ -151,9 +155,10 @@ int main(int argc, char *argv[])
     /// and the SystemAssembly.
     //Form<TrialFunction> a;
     FormMultiThread<TrialFunction> a;
+    double E=206.84e3, nu=0.3;
     /// Here an instance of the local intergrator is being declared.
     /// This is used to integrate over each element
-    LinearElastic lcl_intgrt(a,u,v);
+    LinearElastic lcl_intgrt(a,u,v, E, nu);
     /// An instace of system Assembler is declared.
     SystemAssembler<LinearElastic, TrialFunction> systmAssmbly(a,u,v);
     //systmAssmbly.SetLocalIntegrator(lcl_intgrt);
@@ -212,7 +217,8 @@ int main(int argc, char *argv[])
     /// The dirchlet BC is set here.
     DrchltBC.ApplyBC(A.Matrix[0][0],b.Vector[0]);
     /// The problem is solved here.
-    mat X=spsolve(A.Matrix[0][0],b.Vector[0]);
+    mat X;
+    spsolve(X, A.Matrix[0][0],b.Vector[0]);
 
     GmshWriter Write(u, "ElasticEx.pos");
     Write.viewName="Displacement";
@@ -220,7 +226,7 @@ int main(int argc, char *argv[])
     //Write.WriteToGmsh(X, "Disp");
 
     //Setting Mesh to order 1 for Post process analysis
-    int setOrderTo=3;
+    int setOrderTo=Mesh.order[0];
     libGmshReader::MeshReader Mesh_order_1(Mesh, Dimension, setOrderTo);
     vectorLevel=6;
     TrialFunction stress(Mesh_order_1,vectorLevel);
@@ -231,8 +237,10 @@ int main(int argc, char *argv[])
     sp_mat Strss;
     stress_Assmbly.SetMatrixSize(Strss);
     stress_Assmbly.RunSystemAssembly(strss_obj, Strss);
-
-    double E=200.0e3;
+    mat Strss_mat=mat(Strss);
+    cout<<"Rank = "<<rank(Strss_mat)<<"\n";
+    cout<<Strss_mat;
+    Strss_mat.save("Strss2",raw_ascii);
     sp_mat C;
     Set_C_3D(C, E);
     FormMultiThread<TrialFunction> a_strss_RHS_Mat;
@@ -243,8 +251,11 @@ int main(int argc, char *argv[])
     stress_Vctr_Assmbly.SetMatrixSize(strssMat_RHS);
     stress_Vctr_Assmbly.RunSystemAssembly(strss_vctr, strssMat_RHS);
     mat strssVec=strssMat_RHS*X;
+
+    strssVec.save("StrssVec", raw_ascii);
+
     mat Stress;
-    Stress=spsolve(Strss, strssVec);
+    spsolve(Stress, Strss, strssVec);
     GmshWriter WriteStrss(stress, "ElstcStrss.pos");
     WriteStrss.viewName="Stress";
     WriteStrss.WriteToGmshSymmetric_3x3(Stress);

@@ -51,3 +51,7 @@ Transfinite Surface {4};
 Characteristic Length {4, 3, 2, 1} = 3;
 //+
 Transfinite Curve {3, 5, 6, 4, 2, 1} = 1 Using Progression 1;
+//+
+Physical Surface("lock") = {4};
+//+
+Physical Surface("force") = {1};

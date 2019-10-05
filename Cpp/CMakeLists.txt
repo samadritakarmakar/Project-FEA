@@ -71,6 +71,9 @@ target_link_libraries (OneElmntVrfy ProjectFEA)
 add_executable(DiffusionEx DiffusionEx.cpp)
 target_link_libraries (DiffusionEx ProjectFEA)
 
+add_executable(VolumeEx Volume.cpp)
+target_link_libraries (VolumeEx ProjectFEA)
+
 #add_executable(Trial Trial.cpp)
 #target_link_libraries (Trial ProjectFEA)
 
