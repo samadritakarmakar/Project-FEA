@@ -16,9 +16,10 @@ class FindSize : public LocalIntegrator<TrialFunction>
 public:
     FindSize(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v):
         LocalIntegrator<TrialFunction> (a, u, v){}
-    double scalar_integration(FormMultiThread<TrialFunction>& a, TrialFunction& u, int thread)
+    mat scalar_integration(FormMultiThread<TrialFunction>& a, TrialFunction& u, int thread)
     {
-        return a[thread].dX(u);
+        mat dx={a[thread].dX(u)};
+        return dx;
     }
 };
 

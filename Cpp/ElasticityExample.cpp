@@ -53,6 +53,7 @@ public:
                          TestFunctionGalerkin<TrialFunctionNeumannSurface>& v, int thread)
     {
         //double Fz=-4.0e3/(200*60);
+        //double Fy=0.0;
         double Fz=0.0;
         double Fy=-0.046189;
         vec vctr={0, Fy, Fz};
@@ -84,13 +85,44 @@ class Stress : public LocalIntegrator<TrialFunction>
 {
 public:
     Stress(FormMultiThread<TrialFunction>& a, TrialFunction& u,
+           TestFunctionGalerkin<TrialFunction>& v, sp_mat&C, mat& X, mat& vol, std::vector<umat>& NodePositions_u):
+        LocalIntegrator (a, u, v), Disp(X), vol(vol), C(C), NodePositions_u(NodePositions_u)
+    {}
+
+    mat scalar_integration(FormMultiThread<TrialFunction>& a, TrialFunction& u, int thread)
+    {
+        umat positions=NodePositions_u[a[thread].ElementType].row(a[thread].ElementNumber);
+        mat u_local=Disp.rows(positions);
+        double element_volume=vol(a[thread].ElementNumber);
+        return C*a[thread].sym_grad(u)*u_local*a[thread].dX(u)/element_volume;
+    }
+    mat& Disp, & vol;
+    sp_mat& C;
+    std::vector<umat>& NodePositions_u;
+};
+
+class FindSize : public LocalIntegrator<TrialFunction>
+{
+public:
+    FindSize(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v):
+        LocalIntegrator<TrialFunction> (a, u, v){}
+    mat scalar_integration(FormMultiThread<TrialFunction>& a, TrialFunction& u, int thread)
+    {
+        mat dx;
+        dx<<a[thread].dX(u)<<endr;
+        return dx;
+    }
+};
+
+/*class Stress : public LocalIntegrator<TrialFunction>
+{
+public:
+    Stress(FormMultiThread<TrialFunction>& a, TrialFunction& u,
            TestFunctionGalerkin<TrialFunction>& v): LocalIntegrator (a, u, v){}
 
     sp_mat weak_form(FormMultiThread<TrialFunction>& a, TrialFunction& u,
                      TestFunctionGalerkin<TrialFunction>& v, int thread)
     {
-        mat(a[thread].u(u)).save("u",arma_ascii);
-        mat(a[thread].v(v)*a[thread].u(u)*a[thread].dX(u)).save("Strss",raw_ascii);
         return a[thread].v(v)*a[thread].u(u)*a[thread].dX(u);
     }
 };
@@ -114,8 +146,7 @@ public:
 private:
     sp_mat C_Internal;
     std::vector<sp_mat> inner_C_grad_u;
-};
-
+};*/
 ///This class over here through its overloaded virtual function declares the values of Dirichlet Nodes.
 /// The virtual function 'Eval' is evaluated at each node to find the value of Dirichlet Condtion at that node.
 class DeclaredExprssn : public Expression
@@ -156,6 +187,7 @@ int main(int argc, char *argv[])
     //Form<TrialFunction> a;
     FormMultiThread<TrialFunction> a;
     double E=206.84e3, nu=0.3;
+    //E=200e3;
     /// Here an instance of the local intergrator is being declared.
     /// This is used to integrate over each element
     LinearElastic lcl_intgrt(a,u,v, E, nu);
@@ -225,40 +257,38 @@ int main(int argc, char *argv[])
     Write.WriteToGmsh(X);
     //Write.WriteToGmsh(X, "Disp");
 
+    TrialFunction Volume(Mesh, 1);
+    TestFunctionGalerkin<TrialFunction> v_Vol(Volume);
+    FormMultiThread<TrialFunction> a_vol;
+    FindSize Vol_Size(a_vol, Volume, v_Vol);
+    SystemAssembler<FindSize, TrialFunction> VolAssmbly(a_vol, Volume, v_Vol);
+    mat Vol;
+    VolAssmbly.SetScalarSize(Vol);
+    VolAssmbly.RunScalarIntegration(Vol_Size, Vol);
+
+
     //Setting Mesh to order 1 for Post process analysis
-    int setOrderTo=Mesh.order[0];
-    libGmshReader::MeshReader Mesh_order_1(Mesh, Dimension, setOrderTo);
     vectorLevel=6;
-    TrialFunction stress(Mesh_order_1,vectorLevel);
+    TrialFunction stress(Mesh,vectorLevel);
     FormMultiThread<TrialFunction> a_stress;
     TestFunctionGalerkin<TrialFunction> v_Stress(stress);
-    Stress strss_obj(a_stress, stress, v_Stress);
-    SystemAssembler<Stress, TrialFunction> stress_Assmbly(a_stress, stress, v_Stress);
-    sp_mat Strss;
-    stress_Assmbly.SetMatrixSize(Strss);
-    stress_Assmbly.RunSystemAssembly(strss_obj, Strss);
-    mat Strss_mat=mat(Strss);
-    cout<<"Rank = "<<rank(Strss_mat)<<"\n";
-    cout<<Strss_mat;
-    Strss_mat.save("Strss2",raw_ascii);
+
+    std::vector<umat> NodePositions_u;
+    systmAssmbly.SetNodePositions_u(NodePositions_u);
+
     sp_mat C;
     Set_C_3D(C, E);
-    FormMultiThread<TrialFunction> a_strss_RHS_Mat;
-    StressMat strss_vctr(a_strss_RHS_Mat, u, v_Stress, C);
-    cout<<"v_Stress vectorLevel = "<<v_Stress.vectorLvl<<"\n";
-    SystemAssembler<StressMat, TrialFunction> stress_Vctr_Assmbly(a_strss_RHS_Mat, u, v_Stress);
-    sp_mat strssMat_RHS;
-    stress_Vctr_Assmbly.SetMatrixSize(strssMat_RHS);
-    stress_Vctr_Assmbly.RunSystemAssembly(strss_vctr, strssMat_RHS);
-    mat strssVec=strssMat_RHS*X;
 
-    strssVec.save("StrssVec", raw_ascii);
+    mat Strss;
+    Stress strss(a_stress, u, v_Stress, C, X, Vol, NodePositions_u);
+    SystemAssembler<Stress, TrialFunction> StrssAssmbly(a_stress, stress, v);
+    StrssAssmbly.SetVectorSize(Strss);
+    StrssAssmbly.RunScalarIntegration(strss, Strss);
 
-    mat Stress;
-    spsolve(Stress, Strss, strssVec);
     GmshWriter WriteStrss(stress, "ElstcStrss.pos");
     WriteStrss.viewName="Stress";
-    WriteStrss.WriteToGmshSymmetric_3x3(Stress);
+    WriteStrss.SetDataType_to_ElementData();
+    WriteStrss.WriteToGmshSymmetric_3x3(Strss);
 
     cout<<"Done!!!\n";
     return 0;

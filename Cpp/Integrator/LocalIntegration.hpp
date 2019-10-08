@@ -18,7 +18,7 @@ public:
         _a.form[0]=a;
         ResultingMat=std::vector<sp_mat>(1);
         ResultingVector=std::vector<mat>(1);
-        ResultingScalar=std::vector<double>(1);
+        ResultingScalar=std::vector<mat>(1);
         usingFormMultiThread = false;
     }
 
@@ -29,7 +29,7 @@ public:
         numOfThreads= _a.GetNumOfThreads();
         ResultingMat=std::vector<sp_mat>(numOfThreads);
         ResultingVector=std::vector<mat>(numOfThreads);
-        ResultingScalar=std::vector<double>(numOfThreads);
+        ResultingScalar=std::vector<mat>(numOfThreads);
         usingFormMultiThread = true;
     }
 
@@ -70,16 +70,20 @@ public:
         return a[thread].dot(v,b)*a[thread].dX(u);
     }
 
-    virtual double scalar_integration(Form<GenericTrialFunction>& a, GenericTrialFunction& u)
+    virtual mat scalar_integration(Form<GenericTrialFunction>& a, GenericTrialFunction& u)
     {
         cout<<"Warining!!! Internal default virtual function for scalar in single thread is running\n";
-        return a.dX(u);
+        mat dx;
+        dx<<a.dX(u)<<endr;
+        return dx;
     }
 
-    virtual double scalar_integration(FormMultiThread<GenericTrialFunction>& a, GenericTrialFunction& u, int thread)
+    virtual mat scalar_integration(FormMultiThread<GenericTrialFunction>& a, GenericTrialFunction& u, int thread)
     {
          cout<<"Warining!!! Internal default virtual function for matrix in single thread is running\n";
-        return a[thread].dX(u);
+         mat dx;
+         dx<<a[thread].dX(u)<<endr;
+         return dx;
     }
 
 
@@ -198,7 +202,7 @@ public:
         return ResultingVector[thread];
     }
 
-    double GetResultingScalar(int thread=0)
+    mat GetResultingScalar(int thread=0)
     {
         return ResultingScalar[thread];
     }
@@ -244,7 +248,7 @@ private:
     TestFunctionGalerkin<GenericTrialFunction>& v;
     std::vector<sp_mat> ResultingMat;
     std::vector<mat> ResultingVector;
-    std::vector<double> ResultingScalar;
+    std::vector<mat> ResultingScalar;
     int numOfThreads;
     bool usingFormMultiThread;
 };

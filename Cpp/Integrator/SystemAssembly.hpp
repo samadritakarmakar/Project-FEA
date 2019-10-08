@@ -13,6 +13,7 @@ public:
     {
         a_Internal.SetNumOfThreads(1);
         a_Internal[0]=a;
+        SetNodePositions_u_v();
         //integrate=std::
         //        shared_ptr<LocalIntegrator<GenericTrialFunction>>
          //                                        (new LocalIntegrator<GenericTrialFunction>(a_Internal,u_Internal,v_Internal));
@@ -25,8 +26,29 @@ public:
     {
         numOfThreads=a_Internal.GetNumOfThreads();
         cout<<"Number of Threads to be Launched = "<<numOfThreads<<"\n";
+        SetNodePositions_u_v();
     }
 
+    /// Sets the node positions for Trial Function to a passed by reference variable.
+    void SetNodePositions_u(std::vector<umat>& Node_Positions_u)
+    {
+        Node_Positions_u=std::vector<umat>(NodePositions_u.size());
+        for (int ElmntType=0; ElmntType<NodePositions_u.size(); ElmntType++)
+        {
+            Node_Positions_u[ElmntType]=NodePositions_u[ElmntType];
+        }
+    }
+
+
+    /// Sets the node positions for Test Function v to a passed by reference variable.
+    void SetNodePositions_v(std::vector<umat>& Node_Positions_v)
+    {
+        Node_Positions_v=std::vector<umat>(NodePositions_v.size());
+        for (int ElmntType=0; ElmntType<NodePositions_v.size(); ElmntType++)
+        {
+            Node_Positions_v[ElmntType]=NodePositions_v[ElmntType];
+        }
+    }
 
     /// This set the matrix size of the matrix A. It is determines from the size of Function v and Function u.
     void SetMatrixSize(sp_mat& A)
@@ -48,7 +70,7 @@ public:
         //std::cout<<"Size of vector b= "<<v_Internal.vectorLvl*u_Internal.Msh->NodeTag.n_rows<<", 1"<<"\n";
     }
 
-    void SetScalarSize(vec &I)
+    void SetScalarSize(mat &I)
     {
         int TotalNumberOfElements=0;
         for (int ElmntTyp =0; ElmntTyp<u_Internal.NoOfElementTypes;ElmntTyp++)
@@ -56,7 +78,7 @@ public:
            TotalNumberOfElements=TotalNumberOfElements+ u_Internal.NoOfElements[ElmntTyp];
         }
         cout<<"Total Number of Elements= "<<TotalNumberOfElements<<"\n";
-        I.set_size(TotalNumberOfElements,1);
+        I.set_size(TotalNumberOfElements*u_Internal.vectorLvl,1);
     }
 
     /// This Function sets the weak form to be inegrated at the local level. It integrated over every element
@@ -65,16 +87,8 @@ public:
     {
         SetLocalIntegrator(Integrate);
         cout<<"Integrating over "<<u_Internal.PhysicalGrpName<<"\n";
-        NodePositions_u=std::vector<umat>(u_Internal.NoOfElementTypes);
-        NodePositions_v=std::vector<umat>(u_Internal.NoOfElementTypes);
         for (int ElmntTyp=0; ElmntTyp<u_Internal.NoOfElementTypes; ElmntTyp++)
         {
-                GetNodePostions(NodePositions_u[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], u_Internal.originalVctrLvl);
-                GetNodePostions(NodePositions_v[ElmntTyp], v_Internal.ElmntNodes[ElmntTyp], v_Internal.originalVctrLvl);
-                //cout<<"v_Internal.originalVctrLvl ="<<v_Internal.originalVctrLvl<<"\n";
-                //cout<<"u_Internal.ElmntNodes[ElmntTyp] =\n"<<u_Internal.ElmntNodes[ElmntTyp]<<"\n";
-                //cout<<"NodePositions_v[ElmntTyp] =\n"<<NodePositions_v[ElmntTyp]<<"\n";
-            //u_Internal.Msh->ElementNodes[ElmntTyp].n_rows;
             std::vector<sp_mat> Atemp(numOfThreads);
             int ElmntDivision=u_Internal.NoOfElements[ElmntTyp]/numOfThreads;
             if(integrate->IsUsingFormMultiThread())
@@ -120,14 +134,8 @@ public:
     {
         SetLocalIntegrator(Integrate);
         cout<<"Integrating over "<<u_Internal.PhysicalGrpName<<"\n";
-        NodePositions_u=std::vector<umat>(u_Internal.NoOfElementTypes);
-        NodePositions_v=std::vector<umat>(u_Internal.NoOfElementTypes);
         for (int ElmntTyp=0; ElmntTyp<u_Internal.NoOfElementTypes; ElmntTyp++)
         {
-            GetNodePostions(NodePositions_u[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], u_Internal.originalVctrLvl);
-            GetNodePostions(NodePositions_v[ElmntTyp], v_Internal.ElmntNodes[ElmntTyp], v_Internal.originalVctrLvl);
-            //cout<<"u_Internal.ElmntNodes[ElmntTyp] "<<u_Internal.ElmntNodes[ElmntTyp];
-            //cout<<"NodePositions_u[ElmntTyp] "<<NodePositions_u[ElmntTyp]<<"\n";
             std::vector<mat> bTemp(numOfThreads);
             int ElmntDivision=u_Internal.NoOfElements[ElmntTyp]/numOfThreads;
             if(integrate->IsUsingFormMultiThread())
@@ -165,7 +173,7 @@ public:
         }
     }
 
-    void RunScalarIntegration(GenericLocalIntegrator& Integrate, vec& I)
+    void RunScalarIntegration(GenericLocalIntegrator& Integrate, mat& I)
     {
         SetLocalIntegrator(Integrate);
         SetScalarSize(I);
@@ -199,10 +207,11 @@ public:
             else
             {
                 integrate->SetElementStartTo(0, 0);
+                int vectrLvl=u_Internal.vectorLvl;
                 for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp]; ElmntNmbr++)
                 {
                     RunLocalIntegrationScalar();
-                    I(ElmntNmbr)=integrate->GetResultingScalar();
+                    I.rows(ElmntNmbr*vectrLvl,(ElmntNmbr+1)*vectrLvl-1)=integrate->GetResultingScalar();
                     integrate->GoToNextElement();
                 }
              integrate->GoToNextElementType();
@@ -220,6 +229,18 @@ private:
     sp_mat* A_Internal;
     mat * b_Internal;
     int numOfThreads;
+
+    /// Sets internal variables NodePositions_u and NodePositions_v
+    void SetNodePositions_u_v()
+    {
+        NodePositions_u=std::vector<umat>(u_Internal.NoOfElementTypes);
+        NodePositions_v=std::vector<umat>(u_Internal.NoOfElementTypes);
+        for (int ElmntTyp=0; ElmntTyp<u_Internal.NoOfElementTypes; ElmntTyp++)
+        {
+            GetNodePostions(NodePositions_u[ElmntTyp], u_Internal.ElmntNodes[ElmntTyp], u_Internal.originalVctrLvl);
+            GetNodePostions(NodePositions_v[ElmntTyp], v_Internal.ElmntNodes[ElmntTyp], v_Internal.originalVctrLvl);
+        }
+    }
 
     /// This function causes the weak form defined in the class of Integrate to be executed.
     void SetLocalIntegrator(GenericLocalIntegrator& Integrate)
@@ -375,14 +396,16 @@ private:
         integrate->GoToNextElementType();
     }
 
-    void IntegrateOverElements4Scalar(vec &I, int thread, int ElmntTyp, int ElmntStart, int ElmntEnd)
+    void IntegrateOverElements4Scalar(mat &I, int thread, int ElmntTyp, int ElmntStart, int ElmntEnd)
     {
+        cout<<"Thread "<<thread<<" has been launched!!!\n";
         integrate->SetElementStartTo(thread, ElmntStart);
+        int vectrLvl=u_Internal.vectorLvl;
         //cout<<"Size of I = ("<<I.n_rows<<", "<<I.n_cols<<")\n";
         for (int ElmntNmbr=ElmntStart; ElmntNmbr<ElmntEnd; ElmntNmbr++)
         {
             RunLocalIntegrationScalar(thread);
-            I(ElmntNmbr,0)=integrate->GetResultingScalar(thread);
+            I.rows(ElmntNmbr*vectrLvl,(ElmntNmbr+1)*vectrLvl-1)=integrate->GetResultingScalar(thread);
             integrate->GoToNextElement(thread);
         }
         integrate->GoToNextElementType(thread);

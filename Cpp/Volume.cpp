@@ -6,9 +6,11 @@ class FindSize : public LocalIntegrator<TrialFunction>
 public:
     FindSize(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v):
         LocalIntegrator<TrialFunction> (a, u, v){}
-    double scalar_integration(FormMultiThread<TrialFunction>& a, TrialFunction& u, int thread)
+    mat scalar_integration(FormMultiThread<TrialFunction>& a, TrialFunction& u, int thread)
     {
-        return a[thread].dX(u);
+        mat dx;
+        dx<<a[thread].dX(u)<<endr;
+        return dx;
     }
 };
 int main(int argc, char *argv[])
@@ -25,10 +27,14 @@ int main(int argc, char *argv[])
     TrialFunction u(Mesh, vectorLevel);
     TestFunctionGalerkin<TrialFunction> v(u);
     FormMultiThread<TrialFunction> a;
-    vec h;
+    mat h;
     SystemAssembler<FindSize,TrialFunction> SclrIntrgtn(a, u ,v);
     FindSize SizeOfElement(a,u,v);
     SclrIntrgtn.RunScalarIntegration(SizeOfElement, h);
     h=abs(h);
     cout<<"Total Volume = "<<sum(h)<<"\n";
+    GmshWriter WriteStrss(u, "Volume.pos");
+    WriteStrss.viewName="Volume";
+    WriteStrss.SetDataType_to_ElementData();
+    WriteStrss.WriteToGmsh(h);
 }
