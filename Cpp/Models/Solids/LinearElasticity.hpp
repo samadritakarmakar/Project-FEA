@@ -21,6 +21,15 @@ public:
     {
         return a.inner(a.sym_grad(v),C_Internal*a.sym_grad(u))*a.dX(u);
     }
+    LinearElastic(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v, sp_mat& C):
+        C_Internal(C),
+        LocalIntegrator (a,u,v)
+    {
+    }
+    sp_mat weak_form(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v, int thread)
+    {
+        return a[thread].inner(a[thread].sym_grad(v),C_Internal*a[thread].sym_grad(u))*a[thread].dX(u);
+    }
 private:
     double E_Internal, nu_Internal;
     sp_mat& C_Internal;
@@ -37,6 +46,15 @@ public:
     mat weak_form_vector(Form<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v)
     {
         return a.dot(v,BodyForce_Internal)*a.dX(u);
+    }
+    LinearElastic_BodyForce(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v, vec& BodyForce):
+        BodyForce_Internal(BodyForce),
+        LocalIntegrator (a,u,v)
+    {
+    }
+    mat weak_form_vector(FormMultiThread<TrialFunction>& a, TrialFunction& u, TestFunctionGalerkin<TrialFunction>& v, int thread)
+    {
+        return a[thread].dot(v,BodyForce_Internal)*a[thread].dX(u);
     }
 private:
     vec &BodyForce_Internal;
@@ -57,6 +75,18 @@ public:
     {
         return a.dot(v,TractionForce_Internal)*a.dS(u);
     }
+    LinearElastic_TractionArea(FormMultiThread<TrialFunctionNeumannSurface>& a, TrialFunctionNeumannSurface& u,
+                            TestFunctionGalerkin<TrialFunctionNeumannSurface>& v, vec& TractionForce):
+        TractionForce_Internal(TractionForce),
+        LocalIntegrator (a,u,v)
+    {
+    }
+
+    mat weak_form_vector(FormMultiThread<TrialFunctionNeumannSurface>& a, TrialFunctionNeumannSurface& u,
+                         TestFunctionGalerkin<TrialFunctionNeumannSurface>& v, int thread)
+    {
+        return a[thread].dot(v,TractionForce_Internal)*a[thread].dS(u);
+    }
 private:
 vec& TractionForce_Internal;
 };
@@ -75,6 +105,17 @@ public:
                      TestFunctionGalerkin<TrialFunctionNeumannLine>& v)
     {
         return a.dot(v,TractionForce_Internal)*a.dL(u);
+    }
+    LinearElastic_TractionLine(FormMultiThread<TrialFunctionNeumannLine>& a, TrialFunctionNeumannLine& u,
+                            TestFunctionGalerkin<TrialFunctionNeumannLine>& v,  vec& TractionForce):
+        TractionForce_Internal(TractionForce),
+        LocalIntegrator (a,u,v)
+    {
+    }
+    mat weak_form_vector(FormMultiThread<TrialFunctionNeumannLine>& a, TrialFunctionNeumannLine& u,
+                     TestFunctionGalerkin<TrialFunctionNeumannLine>& v, int thread)
+    {
+        return a[thread].dot(v,TractionForce_Internal)*a[thread].dL(u);
     }
 private:
 vec& TractionForce_Internal;

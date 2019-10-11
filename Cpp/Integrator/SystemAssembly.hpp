@@ -13,6 +13,8 @@ public:
     {
         a_Internal.SetNumOfThreads(1);
         a_Internal[0]=a;
+        numOfThreads=a_Internal.GetNumOfThreads();
+        cout<<"Number of Threads to be Launched = "<<numOfThreads<<"\n";
         SetNodePositions_u_v();
         //integrate=std::
         //        shared_ptr<LocalIntegrator<GenericTrialFunction>>
@@ -136,6 +138,7 @@ public:
         cout<<"Integrating over "<<u_Internal.PhysicalGrpName<<"\n";
         for (int ElmntTyp=0; ElmntTyp<u_Internal.NoOfElementTypes; ElmntTyp++)
         {
+            cout<<"numOfThreads ="<<numOfThreads<<"\n";
             std::vector<mat> bTemp(numOfThreads);
             int ElmntDivision=u_Internal.NoOfElements[ElmntTyp]/numOfThreads;
             if(integrate->IsUsingFormMultiThread())

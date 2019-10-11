@@ -90,7 +90,7 @@ public:
         }
         if(dataType.compare("NodeData")==0)
         {
-            getNodeTagAndNodeData(x, tags, data, 9);
+            getNodeTagAndNodeData(x_new, tags, data, 9);
         }
         else if(dataType.compare("ElementData")==0)
         {
@@ -144,14 +144,15 @@ private:
 
         cout<<"Vector Level for write ="<<u_originalVctrLvl<<"\n";
         //cout<<"Unique Node Tags are"<<unique(NodeTagPtr);
+        cout<<"NodeTagPtr.n_rows ="<<NodeTagPtr.n_rows<<"\n";
         for (int tagcount=0; tagcount<NodeTagPtr.n_rows; tagcount++)
         {
-            Nodetags[tagcount]=NodeTagPtr(tagcount,0);
+            //Nodetags[tagcount]=NodeTagPtr(tagcount,0);
             Nodedata[tagcount]=std::vector<double>(u_originalVctrLvl);
             for (int vctrLvlCntr=0; vctrLvlCntr<u_originalVctrLvl; vctrLvlCntr++)
             {
+                //cout<<" at [tagcount]= "<<tagcount<<" [vctrLvlCntr]= "<<vctrLvlCntr<<"\n";
                 Nodedata[tagcount][vctrLvlCntr]=x(tagcount*u_originalVctrLvl+vctrLvlCntr);
-                //cout<<Nodetags[tagcount]<<"    "<<Nodedata[tagcount][vctrLvlCntr]<<"\n";
                 //cout<<Nodedata[tagcount][vctrLvlCntr]<<" ";
             }
 
