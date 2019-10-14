@@ -81,7 +81,7 @@ You can set it by typing
     
 Type the following in your Gmsh build directory. This will build a static library of Gmsh.  
 
-    cmake -DDEFAULT=0 -DENABLE_BUILD_LIB=1 -DENABLE_POST=1 -DENABLE_PARSER=1 <path gmsh source directory>
+    cmake -DDEFAULT=1 -DENABLE_BUILD_LIB=1 <path gmsh source directory>
     make lib
     
 Clone the ProjectFEA Library by typing  
