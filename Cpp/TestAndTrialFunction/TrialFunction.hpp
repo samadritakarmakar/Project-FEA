@@ -22,6 +22,7 @@ public:
     std::vector<int> NoOfGaussPts;
     std::vector<int> NoOfElements;
     std::vector<umat> ElmntNodes;
+    int numOfNodes;
     std::vector<std::vector<mat>> dN_by_dEps;
     libGmshReader::MeshReader *Msh;
     int MeshDimension;
@@ -105,6 +106,7 @@ public:
     {
         vectorLvl=vectorLevel;
         originalVctrLvl=vectorLevel;
+        numOfNodes=Msh->NodeTag.n_rows;
         N=std::vector<mat> (Msh->NumOfElementTypes);
         Phi=std::vector<LagrangeShapeFunction> (Msh->NumOfElementTypes);
         GaussData=std::vector<mat> (Msh->NumOfElementTypes);

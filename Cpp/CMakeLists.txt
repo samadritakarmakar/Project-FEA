@@ -35,6 +35,8 @@ include_directories ("${PROJECT_SOURCE_DIR}/TestAndTrialFunction/")
 add_subdirectory(TestAndTrialFunction/)
 include_directories ("${PROJECT_SOURCE_DIR}/Integrator/")
 add_subdirectory(Integrator/)
+include_directories ("${PROJECT_SOURCE_DIR}/Dynamic/")
+add_subdirectory(Dynamic/)
 include_directories ("${PROJECT_SOURCE_DIR}/DirichletBC/")
 add_subdirectory(DirichletBC/)
 include_directories("${PROJECT_SOURCE_DIR}/Models")
@@ -73,6 +75,12 @@ target_link_libraries (DiffusionEx ProjectFEA)
 
 add_executable(VolumeEx Volume.cpp)
 target_link_libraries (VolumeEx ProjectFEA)
+
+add_executable(TestDynamic DynamicTest.cpp)
+target_link_libraries(TestDynamic ProjectFEA)
+
+add_executable(DynamicHeatDiff DynamicHeatDiff.cpp)
+target_link_libraries(DynamicHeatDiff ProjectFEA)
 
 #add_executable(Trial Trial.cpp)
 #target_link_libraries (Trial ProjectFEA)
