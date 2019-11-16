@@ -55,6 +55,12 @@ or You may try the example of Advection-Diffusion
     
 <img src="Cpp/Pics/DnstyFldCmbnd.png" alt="Advection-Diffusion Example of order 1">    
 
+or You may try the example of Dynamic Heat Diffusion
+
+    ./DynamicHeatDiff SampleGmsh/Rod.msh 3
+    
+<img src="Cpp/Pics/Reports/Dynamic Heat Diffusion/Pics-Order-2/HtDffssn.gif" alt="Dynamic Heat Diffusion Example of order 2">    
+
 
 ## One Click Download and Compilation
 
