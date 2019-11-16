@@ -222,6 +222,11 @@ public:
         _a[thread].NextElementType();
     }
 
+    void ResetElementType(int thread=0)
+    {
+        _a[thread].ResetElementType();
+    }
+
     bool IsUsingFormMultiThread()
     {
         return usingFormMultiThread;

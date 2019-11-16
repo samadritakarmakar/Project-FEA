@@ -74,10 +74,10 @@ You can also clone it by,
 
     git clone https://gitlab.onelab.info/gmsh/gmsh.git
     
-The Branch currently used by ProjectFEA is gmsh_4_2_3.  
+The Branch currently used by ProjectFEA is gmsh_4_4_1.  
 You can set it by typing  
 
-    git checkout gmsh_4_2_3
+    git checkout gmsh_4_4_1
     
 Type the following in your Gmsh build directory. This will build a static library of Gmsh.  
 
