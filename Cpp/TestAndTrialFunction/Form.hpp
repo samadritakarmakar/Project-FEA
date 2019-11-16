@@ -253,6 +253,10 @@ public:
          ElementNumber=ElementStart;
      }
 
+     void ResetElementType()
+     {
+         ElementType=0;
+     }
 
 protected:
     GenericTrialFunction *u_Internal;

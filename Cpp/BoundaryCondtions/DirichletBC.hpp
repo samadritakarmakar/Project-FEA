@@ -10,6 +10,7 @@ public:
         PhysclGrpNum (PhysicalGroupNumber), Msh(u.Msh),
         vctrLvlInternal(u.originalVctrLvl), currentNodeNumber(0)
     {
+        PhysicalGroupName=Msh->PhysicalGroupName[PhysclGrpNum];
         DirichletBCNodes=std::vector<umat>(Msh->NumOfElementTypes);
         DirichletBCNodesFill=std::vector<umat>(Msh->NumOfElementTypes);
         NoOfNodes=std::vector<int>(Msh->NumOfElementTypes);
@@ -17,6 +18,11 @@ public:
         ExprssnPositions=std::vector<umat>(Msh->NumOfElementTypes);
         for (int ElementType=0; ElementType<Msh->NumOfElementTypes; ElementType++)
         {
+            if(int(Msh->ElmntPhysclGrpNodes[ElementType].size())==0)
+            {
+                cout<<"A Physical Group at Index "<<PhysclGrpNum<<" does not exist!!!"<<"\n";
+                throw;
+            }
             DirichletBCNodes[ElementType]=vectorise(unique(Msh->ElmntPhysclGrpNodes[ElementType][PhysclGrpNum]));
             NoOfNodes[ElementType]=DirichletBCNodes[ElementType].n_rows;
             GetNodePostions(NodePositions[ElementType],DirichletBCNodes[ElementType],vctrLvlInternal);
@@ -86,59 +92,118 @@ public:
      /// Applies the the given Dirichlet BC.
      void ApplyBC(sp_mat &A, mat& b)
      {
-         cout<<"Applying Dirichlet BC over Physical Group "<<Msh->PhysicalGroupName[PhysclGrpNum]<<"\n";
+         //cout<<"Applying Dirichlet BC over Physical Group "<<Msh->PhysicalGroupName[PhysclGrpNum]<<"\n";
+         cout<<"Applying Dirichlet BC over Physical Group "<<PhysicalGroupName<<"\n";
          // Below the The rows and cols of matrix 'A' with dirichlet BC are set to zero.
          // The diagonal terms with  dirichlet BC are set to 1.
          // The rows of vector 'b' are set the with Diriclet values.
          for (int ElementType=0; ElementType<Msh->NumOfElementTypes; ElementType++)
          {
-             umat locations_1s;
+             //umat locations_1s;
              umat uniquePositions;
-             uniquePositions.set_size(1,0);
-             vec XTemp;
-             x(XTemp);
-             for (int NodeNumber=0; NodeNumber<NoOfNodes[ElementType]; NodeNumber++)
-             {
-                 currentNodeNumber=NodeNumber;
-                 umat Positions1=DirichletBCNodesFill[ElementType].row(NodeNumber);
-                 uniquePositions=join_horiz(uniquePositions, Positions1);
-                 //vec X;
-                 //x(X);
-                 vec X=XTemp.row(NodeNumber);
-                 vec Expressn= ExprssnInternal->Eval(X);
-                 b.rows(Positions1)=Expressn.rows(ExprssnPositions[ElementType]);
-                 //cout<<"DirchletBC Applied at, "<<Msh->NodalCoordinates.row(Positions1(0,0)/vctrLvlInternal)<<"\n";
-                 /*
-                 for (int MatPosition=0;MatPosition<Positions1.n_cols;MatPosition++)
-                 {
-                     //A.row(Positions1(0,MatPosition)).zeros();
-                     //A.col(Positions1(0,MatPosition)).zeros();
-                 }
-                 */
-             }
+             SetBC_on_b_n_GetUniquePositions(b, uniquePositions, ElementType);
+             SetBC_on_A(A, uniquePositions);
+             cout<<"Done Applying Dirichlet BC!!!\n";
+         }
+     }
+
+     void ApplyBC_Dynamic(mat& Sol_of_u, sp_mat& A, mat& b)
+     {
+         cout<<"Applying Dirichlet BC over Physical Group "<<PhysicalGroupName<<"\n";;
+         for (int ElementType=0; ElementType<Msh->NumOfElementTypes; ElementType++)
+         {
+             //umat locations_1s;
+             umat uniquePositions;
+             SetBC_on_b_n_GetUniquePositions(Sol_of_u, uniquePositions, ElementType);
+             SetBC_on_A(A, uniquePositions);
+             b.rows(uniquePositions).zeros();
+             cout<<"Done Applying Dirichlet BC!!!\n";
+         }
+     }
+
+     void Set_Dynamic_BC_on_M_K_C(sp_mat& Matrix)
+     {
+         umat uniquePositions;
+         for (int ElementType=0; ElementType<Msh->NumOfElementTypes; ElementType++)
+         {
+             GetUniquePostions(uniquePositions, ElementType);
+             umat locations_1s;
              locations_1s.set_size(2, uniquePositions.n_cols);
              locations_1s=repmat(uniquePositions,2,1);
              //This saves a set of sparse matrix whose all elements are zero except where Dirchlet BC conditons are applied.
              //Where Dirichlet BC Conditions are applied, diagonal elements are '1.0';
-             sp_mat ATemp=sp_mat(false, locations_1s, ones(locations_1s.n_cols,1), A.n_rows, A.n_cols, true, false);
+             sp_mat ATemp=sp_mat(false, locations_1s, ones(locations_1s.n_cols,1), Matrix.n_rows, Matrix.n_cols, true, false);
              //---------------------------
-             sp_mat Azero=speye(A.n_rows, A.n_cols);
+             sp_mat Azero=speye(Matrix.n_rows, Matrix.n_cols);
              Azero-=ATemp;//Where Dirichlet BC Conditions are applied, diagonal elements are '0.0' other diagonals are 1.0;
-             A=A*Azero; //Sets Columns corresponding to Dirichlet BC Conditions to zero.
-             A=(A.t()*Azero).t(); //Sets Rows corresponding to Dirichlet BC Conditions to zero.
-             //--------------------------
-             //cout<<mat(ATemp)<<"\n";
-             A=A+ATemp; //Where Dirichlet BC Conditions are applied, diagonal elements are '1.0'.
-                        //Corresponding Rows and columns are zero;
-             cout<<"Done Applying Dirichlet BC!!!\n";
+             //Matrix=Matrix*Azero; //Sets Columns corresponding to Dirichlet BC Conditions to zero.
+             Matrix=(Matrix.t()*Azero).t(); //Sets Rows corresponding to Dirichlet BC Conditions to zero.
          }
      }
+protected:
+     libGmshReader::MeshReader *Msh;
+ void SetBC_on_b_n_GetUniquePositions(mat &b, umat & uniquePositions, int ElementType)
+ {
+     uniquePositions.set_size(1,0);
+     vec XTemp;
+     x(XTemp);
+     for (int NodeNumber=0; NodeNumber<NoOfNodes[ElementType]; NodeNumber++)
+     {
+         currentNodeNumber=NodeNumber;
+         umat Positions1=DirichletBCNodesFill[ElementType].row(NodeNumber);
+         uniquePositions=join_horiz(uniquePositions, Positions1);
+         //vec X;
+         //x(X);
+         vec X=XTemp.row(NodeNumber);
+         vec Expressn= ExprssnInternal->Eval(X);
+         b.rows(Positions1)=Expressn.rows(ExprssnPositions[ElementType]);
+         //cout<<"DirchletBC Applied at, "<<Msh->NodalCoordinates.row(Positions1(0,0)/vctrLvlInternal)<<"\n";
+         /*
+         for (int MatPosition=0;MatPosition<Positions1.n_cols;MatPosition++)
+         {
+             //A.row(Positions1(0,MatPosition)).zeros();
+             //A.col(Positions1(0,MatPosition)).zeros();
+         }
+         */
+     }
+ }
+
+ void GetUniquePostions(umat &uniquePositions, int ElementType)
+ {
+     uniquePositions.set_size(1,0);
+     for (int NodeNumber=0; NodeNumber<NoOfNodes[ElementType]; NodeNumber++)
+     {
+         currentNodeNumber=NodeNumber;
+         umat Positions1=DirichletBCNodesFill[ElementType].row(NodeNumber);
+         uniquePositions=join_horiz(uniquePositions, Positions1);
+     }
+ }
+
+ void SetBC_on_A(sp_mat& A, umat &uniquePositions)
+ {
+     umat locations_1s;
+     locations_1s.set_size(2, uniquePositions.n_cols);
+     locations_1s=repmat(uniquePositions,2,1);
+     //This saves a set of sparse matrix whose all elements are zero except where Dirchlet BC conditons are applied.
+     //Where Dirichlet BC Conditions are applied, diagonal elements are '1.0';
+     sp_mat ATemp=sp_mat(false, locations_1s, ones(locations_1s.n_cols,1), A.n_rows, A.n_cols, true, false);
+     //---------------------------
+     sp_mat Azero=speye(A.n_rows, A.n_cols);
+     Azero-=ATemp;//Where Dirichlet BC Conditions are applied, diagonal elements are '0.0' other diagonals are 1.0;
+     A=A*Azero; //Sets Columns corresponding to Dirichlet BC Conditions to zero.
+     A=(A.t()*Azero).t(); //Sets Rows corresponding to Dirichlet BC Conditions to zero.
+     //--------------------------
+     //cout<<mat(ATemp)<<"\n";
+     A=A+ATemp; //Where Dirichlet BC Conditions are applied, diagonal elements are '1.0'.
+                //Corresponding Rows and columns are zero;
+ }
+
 private:
     //TrialFunction& u_Internal;
+    std::string PhysicalGroupName;
     int& PhysclGrpNum;
     int& vctrLvlInternal;
     int currentNodeNumber;
-    libGmshReader::MeshReader *Msh;
     std::vector<umat> DirichletBCNodes, DirichletBCNodesFill;
     std::vector<int> NoOfNodes;
     std::vector<umat> NodePositions;

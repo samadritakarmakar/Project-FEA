@@ -22,6 +22,7 @@ public:
     std::vector<int> NoOfGaussPts;
     std::vector<int> NoOfElements;
     std::vector<umat> ElmntNodes;
+    int numOfNodes;
     std::vector<std::vector<mat>> dN_by_dEps;
     libGmshReader::MeshReader *Msh;
     int MeshDimension;
@@ -66,45 +67,23 @@ public:
         SetGaussPtBasedVariables();
         // Keep derivatives of Shape Functions w.rt. points within the reference elements ready.
         Generate_dN_by_dEps ();
-        /*std::vector<libGmshReader::MeshReader> MeshLowerDim (MeshDimension-1);
-
-        int dim;
-        int vectorLvlNew=vectorLvl;
-        for (dim=MeshDimension-1; dim>=2; dim--)
-        {
-            if(vectorLvlNew!=1)
-            {
-                vectorLvlNew--;
-            }
-            cout<<"vectorLvlNew = "<<vectorLvlNew<<" dim= "<<dim<<"\n";
-            MeshLowerDim[dim-1]=libGmshReader::MeshReader(Msh->ElementData::fileName, dim);
-            //static TrialFunction u_down(MeshLowerDim[dim],vectorLvlNew, dim);
-        }*/
     }
 
-    /*TrialFunction(libGmshReader::MeshReader& Mesh, int& vectorLevel, int& Dimension)
-    {
-        NewMeshInstanceCreated=false;
-        SetMesh(Mesh);
-        SetCommonVariables(vectorLevel);
-        SetDimension(Dimension);
-        CheckVectorLevel();
-        GetNumberOfVariables();
-        SetGaussPtBasedVariables();
-        // Keep derivatives of Shape Functions w.rt. points within the reference elements ready.
-        Generate_dN_by_dEps ();
-    }
-*/
     void SetMesh(libGmshReader::MeshReader& Mesh)
     {
         Msh=&Mesh;
     }
 
+    void SetPhysicalGroupNumber(int PhysicalGroup)
+    {
+        PhysclGrpNum=PhysicalGroup;
+    }
 
     void SetCommonVariables(int& vectorLevel)
     {
         vectorLvl=vectorLevel;
         originalVctrLvl=vectorLevel;
+        numOfNodes=Msh->NodeTag.n_rows;
         N=std::vector<mat> (Msh->NumOfElementTypes);
         Phi=std::vector<LagrangeShapeFunction> (Msh->NumOfElementTypes);
         GaussData=std::vector<mat> (Msh->NumOfElementTypes);
@@ -176,11 +155,28 @@ public:
     /// Sets the NoOfElements and ElmntNodes or 'Connectivity Matrix' for a certain Element Type.
     void GetNumberOfVariables()
     {
-        for (int ElementType = 0; ElementType<Msh->NumOfElementTypes; ++ElementType)
+        if(PhysclGrpNum<0)
         {
-            NoOfElements[ElementType]= Msh->ElementNodes[ElementType].n_rows;
-            ElmntNodes[ElementType]= Msh->ElementNodes[ElementType];
-            PhysicalGrpName="Whole Domain";
+            for (int ElementType = 0; ElementType<Msh->NumOfElementTypes; ++ElementType)
+            {
+                NoOfElements[ElementType]= Msh->ElementNodes[ElementType].n_rows;
+                ElmntNodes[ElementType]= Msh->ElementNodes[ElementType];
+                PhysicalGrpName="Whole Domain";
+            }
+        }
+        else
+        {
+            for (int ElementType = 0; ElementType<Msh->NumOfElementTypes; ++ElementType)
+            {
+                if(int(Msh->ElmntPhysclGrpNodes[ElementType].size())==0)
+                {
+                    cout<<"A Physical Group at Index "<<PhysclGrpNum<<" does not exist!!!"<<"\n";
+                    throw;
+                }
+                NoOfElements[ElementType]= Msh->ElmntPhysclGrpNodes[ElementType][PhysclGrpNum].n_rows;
+                ElmntNodes[ElementType]= Msh->ElmntPhysclGrpNodes[ElementType][PhysclGrpNum];
+                PhysicalGrpName=Msh->PhysicalGroupName[PhysclGrpNum];
+            }
         }
     }
 
@@ -657,6 +653,8 @@ protected:
             }
         }
     }
+private:
+    int PhysclGrpNum=-1;
 };
 
 #endif // TRIALFUNCTION_HPP

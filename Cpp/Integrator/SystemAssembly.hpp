@@ -210,6 +210,7 @@ public:
             else
             {
                 integrate->SetElementStartTo(0, 0);
+                integrate->ResetElementType();
                 int vectrLvl=u_Internal.vectorLvl;
                 for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp]; ElmntNmbr++)
                 {
@@ -289,6 +290,7 @@ private:
     {
         cout<<"Thread "<<thread<<" has been launched!!!\n";
         integrate->SetElementStartTo(thread, ElmntStart);
+        integrate->ResetElementType(thread);
         //int thread=0;
         Atemp.set_size(A.n_rows, A.n_cols);
         for (int ElmntNmbr=ElmntStart; ElmntNmbr<ElmntEnd ; ElmntNmbr++)
@@ -311,6 +313,7 @@ private:
     void IntegrateElement4Matrix(sp_mat& A, sp_mat& Atemp, int ElmntTyp)
     {
         integrate->SetElementStartTo(0, 0);
+        integrate->ResetElementType();
         Atemp.set_size(A.n_rows, A.n_cols);
         for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp] ; ElmntNmbr++)
         {
@@ -364,6 +367,7 @@ private:
     {
         cout<<"Thread "<<thread<<" has been launched!!!\n";
         integrate->SetElementStartTo(thread, ElmntStart);
+        integrate->ResetElementType(thread);
         btemp=zeros(b.n_rows, b.n_cols);
         //int thread=0;
         for (int ElmntNmbr=ElmntStart; ElmntNmbr<ElmntEnd; ElmntNmbr++)
@@ -384,6 +388,7 @@ private:
     void IntegrateElements4Vector(mat &b, mat &btemp, int ElmntTyp)
     {
         integrate->SetElementStartTo(0, 0);
+        integrate->ResetElementType();
         btemp=zeros(b.n_rows, b.n_cols);
         for (int ElmntNmbr=0; ElmntNmbr<u_Internal.NoOfElements[ElmntTyp]; ElmntNmbr++)
         {
@@ -403,6 +408,7 @@ private:
     {
         cout<<"Thread "<<thread<<" has been launched!!!\n";
         integrate->SetElementStartTo(thread, ElmntStart);
+        integrate->ResetElementType(thread);
         int vectrLvl=u_Internal.vectorLvl;
         //cout<<"Size of I = ("<<I.n_rows<<", "<<I.n_cols<<")\n";
         for (int ElmntNmbr=ElmntStart; ElmntNmbr<ElmntEnd; ElmntNmbr++)

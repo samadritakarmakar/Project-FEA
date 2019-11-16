@@ -5,11 +5,15 @@
 #include <gmsh.h>
 #include "TrialFunction.hpp"
 using namespace arma;
+
 class GmshWriter
 {
 public:
     std::string viewName="Results";
     std::string dataType="NodeData";
+
+
+
     GmshWriter(TrialFunction& u, std::string OutputFileName):
         u_Internal(u), outputFileName(OutputFileName)
     {
@@ -21,7 +25,7 @@ public:
     {
         currentViewTag++;
     }
-    void WriteToGmsh(mat &x, int step=0, double time=0.0)
+    void WriteToGmsh(mat &x, int step=0, double time=0.0, int partition=0)
     {
         gmsh::initialize();
         gmsh::open(u_Internal.Msh->ElementData::fileName);
@@ -47,7 +51,7 @@ public:
         {
             getElementTagAndElementData(x, tags, data);
         }
-        gmsh::view::addModelData(currentViewTag, step, modelName, dataType, tags, data, time, u_Internal.originalVctrLvl);
+        gmsh::view::addModelData(currentViewTag, step, modelName, dataType, tags, data, time, u_Internal.originalVctrLvl, partition);
         if (step==0)
         {
             gmsh::view::write(currentViewTag, outputFileName);
@@ -56,7 +60,6 @@ public:
         {
             gmsh::view::write(currentViewTag, outputFileName, true);
         }
-
         gmsh::finalize();
     }
 
@@ -144,10 +147,10 @@ private:
 
         cout<<"Vector Level for write ="<<u_originalVctrLvl<<"\n";
         //cout<<"Unique Node Tags are"<<unique(NodeTagPtr);
-        cout<<"NodeTagPtr.n_rows ="<<NodeTagPtr.n_rows<<"\n";
+        //cout<<"NodeTagPtr.n_rows ="<<NodeTagPtr.n_rows<<"\n";
         for (int tagcount=0; tagcount<NodeTagPtr.n_rows; tagcount++)
         {
-            //Nodetags[tagcount]=NodeTagPtr(tagcount,0);
+            Nodetags[tagcount]=NodeTagPtr(tagcount,0);
             Nodedata[tagcount]=std::vector<double>(u_originalVctrLvl);
             for (int vctrLvlCntr=0; vctrLvlCntr<u_originalVctrLvl; vctrLvlCntr++)
             {
