@@ -30,20 +30,6 @@ public:
     /// A and b are the returned matrices. Sol_of_u_n0 is the current value of the solution.
     /// theta >0.5 gives a stable algorithm.
     /// f is a vector of type mat. f[0] is f_n, f[1] is f_n+1, f[2] is f_n+2, etc.
-    void SingleStep_11(sp_mat& A, mat& b, mat& Sol_of_u_n0, double theta, sp_mat& C_Of_dot_u, sp_mat& K_Of_u,  std::vector<mat>& f,
-                       DirichletBC & applied_Dirichlet)
-    {
-        std::vector<sp_mat> Mat_variables(2);
-        Mat_variables[1].set_size(C_Of_dot_u.n_rows,C_Of_dot_u.n_cols);
-        Mat_variables[1]=C_Of_dot_u;
-        Mat_variables[0].set_size(K_Of_u.n_rows,K_Of_u.n_cols);
-        Mat_variables[0]=K_Of_u;
-        SetSingleStep_11_theta_To(theta);
-        std::vector<mat> Sols_of_u(1);
-        Sols_of_u[0]=Sol_of_u_n0;
-        General_SSpj(A, b, Mat_variables, Sols_of_u, f, applied_Dirichlet);
-    }
-
     void SingleStep_11(sp_mat& A, mat& b, mat& Sol_of_u_n0, double theta, sp_mat& C_Of_dot_u, sp_mat& K_Of_u,  std::vector<mat>& f)
     {
         std::vector<sp_mat> Mat_variables(2);
@@ -56,6 +42,28 @@ public:
         Sols_of_u[0]=Sol_of_u_n0;
         General_SSpj(A, b, Mat_variables, Sols_of_u, f);
     }
+
+    /// Faster implementation of Single Step Algorithm, SS11. Mat_variables is a vector that
+    /// should have index 0 as K, 1 as C.
+    /// f is a vector of type mat. f[0] is f_n, f[1] is f_n+1.
+    void SingleStep_11(sp_mat& A, mat& b, std::vector<mat> Sol_of_u, double theta, std::vector<sp_mat> Mat_variables,
+                       std::vector<mat>& f)
+    {
+        SetSingleStep_11_theta_To(theta);
+        General_SSpj(A, b, Mat_variables, Sol_of_u, f);
+    }
+
+    ///Implementation of Single Step Algorithm, SS22. Mat_variables is a vector that
+    /// should have index 0 as K, 1 as C and 2 as M.
+    /// f is a vector of type mat. f[0] is f_n, f[1] is f_n+1, f[2] is f_n+2.
+    void SingleStep_22(sp_mat& A, mat& b, std::vector<mat> Sols_of_u, std::vector<double> theta, std::vector<sp_mat> Mat_variables,
+                       std::vector<mat>& f)
+    {
+        Set_theta_To(theta);
+        Set_theta_f_To(theta);
+        General_SSpj(A, b, Mat_variables, Sols_of_u, f);
+    }
+
 
     void SetSingleStep_11_theta_To(double theta_ss)
     {
@@ -107,46 +115,16 @@ public:
     void General_SSpj(sp_mat& A, mat& b, std::vector<sp_mat>& Mat_variables, std::vector<mat>& Sols_of_u, std::vector<mat>& f,
                       DirichletBC & applied_Dirichlet)
     {
-        /*std::vector<mat>& u=Sols_of_u;
-        int size_u_mean = u.size();
-        int p=theta.size();
-        if(p!=u.size())
-        {
-            cout<<"The vector size of theta has to be equal to the vector size of u\n";
-            throw;
-        }
-        std::vector<mat> u_mean(size_u_mean);
-        //SetSizeOfMatrix(A);
-        //SetSizeOfVector(b);
-        A.zeros();
-        b.zeros();
-        for (int dot=0; dot<=size_u_mean-1; dot++)
-        {
-            u_mean[dot].set_size(u[0].n_rows,u[0].n_cols);
-            u_mean[dot]=u[dot];
-            for (int q=dot; q<p-1; q++)
-            {
-                u_mean[dot]=u_mean[dot]+theta[q]*pow(delta_t,q+1)*u[q+1]/double(factorial(q+1-dot));
-            }
-            b=b+Mat_variables[dot]*u_mean[dot];
-        }
-        A=A+Mat_variables[theta.size()];
-        int k=theta.size();
-        for(int dot=1; dot<=theta.size(); dot++)
-        {
-            k--;
-            //cout<<"Mat_variables[k] at "<<k<<" = "<<Mat_variables[k]<<"\n" ;
-            A=A+theta[dot-1]*pow(delta_t, dot)*Mat_variables[k]/double(factorial(dot));
-        }
-        mat f_mean;
-        GetMean_f(f, f_mean);
-        //cout<<"f_mean = "<<f_mean<<"\n";
-        b=-b+f_mean;*/
         Build_b(b, Mat_variables, Sols_of_u, f);
         Build_A(A, Mat_variables, Sols_of_u);
         ApplyDirichletBC_to_M_C_K(Mat_variables, applied_Dirichlet);
     }
 
+    /// Implementation of Single Step time algorithm as per O.C. Zienkiewicz book.
+    /// A, b are the values returned.
+    /// Mat_variables is a vector with index 0 as K, 1 as C and 2 as M; or 0 as K, 1 as C.
+    /// Sols_of_u is a vector of the solution matrix of u with u[0]=u, u[1]=\dot{u}, u[2]=\ddot{u}, etc.
+    /// f is a vector of type mat. f[0] is f_n, f[1] is f_n+1, f[2] is f_n+2, etc.
     void General_SSpj(sp_mat& A, mat& b, std::vector<sp_mat>& Mat_variables, std::vector<mat>& Sols_of_u, std::vector<mat>& f)
     {
         Build_b(b, Mat_variables, Sols_of_u, f);
@@ -197,6 +175,7 @@ private:
 
     void Build_b(mat &b, std::vector<sp_mat>& Mat_variables, std::vector<mat>& Sols_of_u, std::vector<mat>& f)
     {
+        b.zeros();
         std::vector<mat>& u=Sols_of_u;
         int size_u_mean = u.size();
         int p=theta.size();
@@ -226,6 +205,7 @@ private:
 
     void Build_A(sp_mat &A, std::vector<sp_mat>& Mat_variables, std::vector<mat>& Sols_of_u)
     {
+        A.zeros();
         A=A+Mat_variables[theta.size()];
         int k=theta.size();
         for(int dot=1; dot<=theta.size(); dot++)
@@ -257,7 +237,8 @@ private:
 
     void BuildDelta_t_Matrix(mat& Delta_t_Matrix)
     {
-        Delta_t_Matrix.set_size(pow(theta_f.size(),2));
+        //Delta_t_Matrix.set_size(pow(theta_f.size(),2));
+        Delta_t_Matrix.set_size(theta_f.size(),theta_f.size());
         for (int i=0; i<theta_f.size(); i++)
         {
             Delta_t_Matrix(i,0)=(i+1)*delta_t;

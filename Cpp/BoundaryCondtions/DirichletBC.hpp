@@ -107,16 +107,20 @@ public:
          }
      }
 
-     void ApplyBC_Dynamic(mat& Sol_of_u, sp_mat& A, mat& b)
+     void ApplyBC_Dynamic(std::vector<mat>& Sol_of_u, sp_mat& A, mat& b)
      {
          cout<<"Applying Dirichlet BC over Physical Group "<<PhysicalGroupName<<"\n";;
          for (int ElementType=0; ElementType<Msh->NumOfElementTypes; ElementType++)
          {
              //umat locations_1s;
              umat uniquePositions;
-             SetBC_on_b_n_GetUniquePositions(Sol_of_u, uniquePositions, ElementType);
+             SetBC_on_b_n_GetUniquePositions(Sol_of_u[0], uniquePositions, ElementType);
              SetBC_on_A(A, uniquePositions);
              b.rows(uniquePositions).zeros();
+             for(int dot=1; dot<Sol_of_u.size(); dot++)
+             {
+                 Sol_of_u[dot].rows(uniquePositions).zeros();
+             }
              cout<<"Done Applying Dirichlet BC!!!\n";
          }
      }

@@ -114,39 +114,6 @@ public:
     }
 };
 
-/*class Stress : public LocalIntegrator<TrialFunction>
-{
-public:
-    Stress(FormMultiThread<TrialFunction>& a, TrialFunction& u,
-           TestFunctionGalerkin<TrialFunction>& v): LocalIntegrator (a, u, v){}
-
-    sp_mat weak_form(FormMultiThread<TrialFunction>& a, TrialFunction& u,
-                     TestFunctionGalerkin<TrialFunction>& v, int thread)
-    {
-        return a[thread].v(v)*a[thread].u(u)*a[thread].dX(u);
-    }
-};
-
-class StressMat : public LocalIntegrator<TrialFunction>
-{
-public:
-    StressMat(FormMultiThread<TrialFunction>& a, TrialFunction& u,
-           TestFunctionGalerkin<TrialFunction>& v, sp_mat& C):
-        LocalIntegrator (a,u,v), C_Internal(C)
-    {
-        inner_C_grad_u=std::vector<sp_mat>(a.GetNumOfThreads());
-    }
-
-    sp_mat weak_form(FormMultiThread<TrialFunction>& a, TrialFunction& u,
-                     TestFunctionGalerkin<TrialFunction>& v, int thread)
-    {
-        inner_C_grad_u[thread]=(C_Internal*a[thread].sym_grad(u));
-        return a[thread].dot(v,inner_C_grad_u[thread])*a[thread].dX(u);
-    }
-private:
-    sp_mat C_Internal;
-    std::vector<sp_mat> inner_C_grad_u;
-};*/
 ///This class over here through its overloaded virtual function declares the values of Dirichlet Nodes.
 /// The virtual function 'Eval' is evaluated at each node to find the value of Dirichlet Condtion at that node.
 class DeclaredExprssn : public Expression

@@ -19,3 +19,5 @@ Characteristic Length {37, 15, 32, 10, 33, 11, 34, 12, 38, 16, 39, 17} = 20;
 Characteristic Length {14, 13, 36, 35} = 5;
 //+
 Characteristic Length {57, 56} = 1;
+//+
+Physical Volume("Tol_Vol") = {1};

@@ -100,7 +100,15 @@ public:
             getElementTagAndElementData(x_new, tags, data, 9);
         }
         gmsh::view::addModelData(currentViewTag, step, modelName, dataType, tags, data, time, 9);
-        gmsh::view::write(currentViewTag, outputFileName);
+        //gmsh::view::write(currentViewTag, outputFileName);
+        if (step==0)
+        {
+            gmsh::view::write(currentViewTag, outputFileName);
+        }
+        else
+        {
+            gmsh::view::write(currentViewTag, outputFileName, true);
+        }
         gmsh::finalize();
     }
 

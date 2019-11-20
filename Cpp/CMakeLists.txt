@@ -82,6 +82,9 @@ target_link_libraries(TestDynamic ProjectFEA)
 add_executable(DynamicHeatDiff DynamicHeatDiff.cpp)
 target_link_libraries(DynamicHeatDiff ProjectFEA)
 
+add_executable(ElasticVibration ElasticVibration.cpp)
+target_link_libraries(ElasticVibration ProjectFEA)
+
 #add_executable(Trial Trial.cpp)
 #target_link_libraries (Trial ProjectFEA)
 

@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
         S11_Instance.SetSizeOfVector(b);
         S11_Instance.SingleStep_11(A, b, Sol_of_u[0], theta, C, K, f);
         mat alpha;
-        AppliedTemp_Dirichlet.ApplyBC_Dynamic(Sol_of_u[0], A, b);
+        AppliedTemp_Dirichlet.ApplyBC_Dynamic(Sol_of_u, A, b);
         spsolve(alpha, A, b);
         time[0]=(step+1)*delta_t;
         S11_Instance.update_Sol_of_u(Sol_of_u, alpha);
