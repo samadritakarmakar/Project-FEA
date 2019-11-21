@@ -49,17 +49,23 @@ In case of the Bar example, a case of cantilever beam is tested, where a force o
 By using formula delta_L =Pl^3/(3EI) we get 14.8mm deflection.  
 The finite element converges to that solution as the order of the elements and the number of nodes are increased.  
 
-or You may try the example of Advection-Diffusion
+or Advection-Diffusion can be tried by running
 
     ./DiffusionEx SampleGmsh/Chimney.msh 2
     
 <img src="Cpp/Pics/DnstyFldCmbnd.png" alt="Advection-Diffusion Example of order 1">    
 
-or You may try the example of Dynamic Heat Diffusion
+or the Dynamic Heat Diffusion Problem can be tried by by running
 
     ./DynamicHeatDiff SampleGmsh/Rod.msh 3
     
 <img src="Cpp/Pics/Reports/Dynamic Heat Diffusion/Pics-Order-2/HtDffssn.gif" alt="Dynamic Heat Diffusion Example of order 2">    
+
+or the Dynamic Vibration Problem can be tried by running
+
+    ./ElasticVibration SampleGmsh/ForkLift.msh 3
+    
+<img src="Cpp/Pics/Reports/ForkLift/ElstcVbrnStrss.gif" alt="Elastic Vibration Example of order 2">    
 
 
 ## One Click Download and Compilation
