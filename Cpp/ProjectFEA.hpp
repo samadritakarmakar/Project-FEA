@@ -2,7 +2,6 @@
 #define PROJECTFEA_HPP
 //#define ARMA_USE_SUPERLU 1
 #include "armadillo"
-#include "Solvers.hpp"
 #include "LagrangeShapeFunctionAllElementTypes.hpp"
 #include "TrialFunction.hpp"
 #include "TestFunctionGalerkin.hpp"

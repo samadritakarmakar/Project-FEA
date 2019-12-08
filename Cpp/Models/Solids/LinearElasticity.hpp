@@ -1,11 +1,12 @@
 #ifndef LINEARELASTICITY_HPP
 #define LINEARELASTICITY_HPP
-#include "TrialFunction.hpp"
-#include "TestFunctionGalerkin.hpp"
-#include "Form.hpp"
-#include "TrialFunctionNeumannSurface.hpp"
-#include "TrialFunctionNeumannLine.hpp"
-#include "LocalIntegration.hpp"
+#include "../TestAndTrialFunction/TrialFunction.hpp"
+#include "../TestAndTrialFunction/TestFunctionGalerkin.hpp"
+#include "../TestAndTrialFunction/Form.hpp"
+#include "../TestAndTrialFunction/FormMultiThread.hpp"
+#include "../TestAndTrialFunction/TrialFunctionNeumannSurface.hpp"
+#include "../TestAndTrialFunction/TrialFunctionNeumannLine.hpp"
+#include "../Integrator/LocalIntegration.hpp"
 #include "PreDefinedElasticityTensor.hpp"
 namespace PreDefinedModels
 {

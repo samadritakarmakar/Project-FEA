@@ -297,7 +297,10 @@ int main(int argc, char *argv[])
     GmshWriter WriteStrss(stress, "ElstcVbrnStrss.msh");
     WriteStrss.viewName="Stress";
     WriteStrss.SetDataType_to_ElementData();
-
+    //const int *p=const_cast<int *>( reinterpret_cast<const int*>(M_C_K[0].col_ptrs));
+    mat alpha;
+    alpha.set_size(M_C_K[0].n_rows);
+    alpha.ones();
     for (int step=0; step<=EndTime/delta_t; step++)
     {
         cout<<"Currently at Step "<<step<<"\n";
@@ -308,7 +311,6 @@ int main(int argc, char *argv[])
         S22_Instance.SetSizeOfVector(b);
         S22_Instance.SingleStep_22(A, b, Sol_of_u, theta, M_C_K, f);
         DrchltBC.ApplyBC_Dynamic(Sol_of_u, A, b);
-        mat alpha;
         spsolve(alpha, A, b);
         mat f_new;
         time[0]+=delta_t;

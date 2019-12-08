@@ -3,6 +3,7 @@
 
 #include "../Math/vecnorm.hpp"
 //#include "../TestAndTrialFunction/TrialFunction.hpp"
+#include "../armadillo"
 using namespace arma;
 template<class GenericTrialFunction>
 mat GetLengthAlongVector(GenericTrialFunction &u, const int Dimension, const vec &vector)
